@@ -6,9 +6,7 @@ import { signup } from "../actions";
 import { ArrowRight, Lock, Mail } from "lucide-react";
 
 export default function SignupPage() {
-  const [state, formAction, pending] = useActionState(async (prevState: any, formData: FormData) => {
-    return await signup(formData);
-  }, null);
+  const [state, formAction, pending] = useActionState(signup, null);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-deep-sea p-4 relative overflow-hidden">
