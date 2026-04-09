@@ -62,24 +62,25 @@ export function HeroSection({ displayName, certLevel }: { displayName?: string; 
             <span className="text-sm font-medium text-ocean-200">Ready for your next adventure?</span>
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-2 drop-shadow-lg">
+          <h1 className="text-3xl md:text-6xl font-bold tracking-tight mb-2 drop-shadow-lg leading-tight">
             Hello, {displayName || "Diver"}
           </h1>
-          <p className="text-ocean-200 flex items-center gap-4 text-sm md:text-base mb-6">
-            <span className="flex items-center gap-1"><Droplets className="w-4 h-4 text-brand-cyan" /> Discover the Deep</span>
-            <span className="flex items-center gap-1"><Thermometer className="w-4 h-4 text-brand-cyan" /> 72°F (Air)</span>
+          <p className="text-ocean-200 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm md:text-base mb-8">
+            <span className="flex items-center gap-1.5"><Droplets className="w-4 h-4 text-brand-cyan" /> Discover the Deep</span>
+            <span className="flex items-center gap-1.5 text-ocean-400">|</span>
+            <span className="flex items-center gap-1.5"><Thermometer className="w-4 h-4 text-brand-teal" /> 72°F Air</span>
           </p>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 mb-4 sm:mb-0">
             <Link 
               href="/explore" 
-              className="bg-gradient-to-r from-brand-cyan to-brand-teal text-deep-sea font-bold px-6 py-3 rounded-full flex items-center gap-2 hover:shadow-[0_0_20px_rgba(0,229,255,0.4)] transition-all hover:scale-105"
+              className="bg-gradient-to-r from-brand-cyan to-brand-teal text-deep-sea font-bold px-8 py-4 rounded-2xl flex items-center justify-center gap-2 hover:shadow-[0_0_20px_rgba(0,229,255,0.4)] transition-all hover:scale-[1.02] active:scale-95 shadow-lg"
             >
               Explore Map <ArrowRight className="w-5 h-5" />
             </Link>
             <Link 
               href="/logbook/new" 
-              className="glass px-6 py-3 rounded-full font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2"
+              className="glass px-8 py-4 rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center justify-center gap-2 border border-white/10"
             >
               Start Log
             </Link>

@@ -9,68 +9,64 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Missing lat/lng parameters" }, { status: 400 });
   }
 
-  const apiKey = process.env.NEXT_PUBLIC_STORMGLASS_API_KEY;
-
-  if (!apiKey || apiKey === "your_stormglass_api_key_here") {
-    return NextResponse.json({
-      mocked: true,
-      data: {
-        waveHeight: (Math.random() * 2 + 0.5).toFixed(1),
-        currentSpeed: (Math.random() * 0.8 + 0.1).toFixed(2),
-        waterTemperature: (Math.random() * 10 + 20).toFixed(1),
-        airTemperature: (Math.random() * 15 + 15).toFixed(1),
-        windSpeed: (Math.random() * 15 + 5).toFixed(1),
-        cloudCover: (Math.random() * 100).toFixed(0),
-      }
-    });
-  }
+  const stormGlassKey = process.env.NEXT_PUBLIC_STORMGLASS_API_KEY;
 
   try {
-    const stormglassUrl = `https://api.stormglass.io/v2/weather/point?lat=${lat}&lng=${lng}&params=waveHeight,waterTemperature,windSpeed,currentSpeed,airTemperature,cloudCover`;
-    const response = await fetch(stormglassUrl, {
-      headers: {
-        Authorization: apiKey,
-      },
-      next: { revalidate: 3600 } 
-    });
+    // 1. Fetch Air Weather from Open-Meteo (Free, Reliable)
+    const openMeteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&hourly=cloudcover`;
+    const openMeteoRes = await fetch(openMeteoUrl, { next: { revalidate: 3600 } });
+    const openMeteoData = await openMeteoRes.json();
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        console.warn("StormGlass API quota exceeded, falling back to mock data.");
-        return NextResponse.json({
-          mocked: true,
-          quotaExceeded: true,
-          data: {
-            waveHeight: (Math.random() * 2 + 0.5).toFixed(1),
-            currentSpeed: (Math.random() * 0.8 + 0.1).toFixed(2),
-            waterTemperature: (Math.random() * 10 + 20).toFixed(1),
-            airTemperature: (Math.random() * 15 + 15).toFixed(1),
-            windSpeed: (Math.random() * 15 + 5).toFixed(1),
-            cloudCover: (Math.random() * 100).toFixed(0),
-          }
-        });
+    // 2. Fetch specialized Marine Data from StormGlass
+    let marineData = {
+      waveHeight: "---",
+      currentSpeed: "---",
+      waterTemperature: "---"
+    };
+
+    if (stormGlassKey && stormGlassKey !== "your_stormglass_api_key_here") {
+      const stormglassUrl = `https://api.stormglass.io/v2/weather/point?lat=${lat}&lng=${lng}&params=waveHeight,waterTemperature,currentSpeed`;
+      const sgRes = await fetch(stormglassUrl, {
+        headers: { Authorization: stormGlassKey },
+        next: { revalidate: 3600 }
+      });
+
+      if (sgRes.ok) {
+        const json = await sgRes.json();
+        const current = json.hours[0];
+        const ex = (p: any) => p?.sg || p?.noaa || p?.icon || 0;
+        
+        marineData = {
+          waveHeight: ex(current.waveHeight).toFixed(1),
+          currentSpeed: ex(current.currentSpeed).toFixed(2),
+          waterTemperature: ex(current.waterTemperature).toFixed(1)
+        };
       }
-      throw new Error(`StormGlass API error: ${response.status}`);
     }
 
-    const json = await response.json();
-    const currentData = json.hours[0];
-    const extract = (param: any) => param?.sg || param?.noaa || param?.icon || 0;
+    // 3. Combine Data
+    const airTemp = openMeteoData.current_weather?.temperature || "---";
+    const windSpeed = openMeteoData.current_weather?.windspeed || "---";
+    const clouds = openMeteoData.hourly?.cloudcover?.[0] || "0";
 
     return NextResponse.json({
-      mocked: false,
+      mocked: !stormGlassKey || stormGlassKey === "your_stormglass_api_key_here",
       data: {
-        waveHeight: extract(currentData.waveHeight).toFixed(1),
-        currentSpeed: extract(currentData.currentSpeed).toFixed(2),
-        waterTemperature: extract(currentData.waterTemperature).toFixed(1),
-        airTemperature: extract(currentData.airTemperature).toFixed(1),
-        windSpeed: extract(currentData.windSpeed).toFixed(1),
-        cloudCover: extract(currentData.cloudCover).toFixed(0),
+        waveHeight: marineData.waveHeight,
+        currentSpeed: marineData.currentSpeed,
+        waterTemperature: marineData.waterTemperature,
+        airTemperature: airTemp,
+        windSpeed: windSpeed,
+        cloudCover: clouds,
+      }
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=600'
       }
     });
 
   } catch (error) {
     console.error("Weather API Route Error:", error);
-    return NextResponse.json({ error: "Failed to fetch weather data" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch hybrid weather data" }, { status: 500 });
   }
 }

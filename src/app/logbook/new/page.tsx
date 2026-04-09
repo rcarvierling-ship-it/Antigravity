@@ -1,15 +1,69 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { ArrowLeft, Save, MapPin, Calendar, Clock, Anchor, Wind } from "lucide-react";
+import { ArrowLeft, Save, MapPin, Calendar, Clock, Anchor, Wind, Users, Zap } from "lucide-react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { calculateSACRate, checkBadgeEligibility } from "@/lib/dive-logic";
 
 export default function NewDiveLog() {
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit, watch } = useForm();
+  const router = useRouter();
+  
+  const startPsi = watch("startPsi");
+  const endPsi = watch("endPsi");
+  const depth = watch("avgDepth");
+  const duration = watch("duration");
 
-  const onSubmit = (data: any) => {
-    console.log(data);
-    // Submit to Supabase here
+  const onSubmit = async (data: any) => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) return;
+
+    const sac = calculateSACRate({
+      startPsi: Number(data.startPsi),
+      endPsi: Number(data.endPsi),
+      tankVolumeCuft: Number(data.tankVolume),
+      avgDepthFt: Number(data.avgDepth) * 3.28, // Convert m to ft for calculation
+      durationMin: Number(data.duration)
+    });
+
+    const { data: logData, error } = await supabase.from("dive_logs").insert({
+      user_id: user.id,
+      custom_site_name: data.site,
+      date: data.date,
+      max_depth_m: Number(data.maxDepth),
+      bottom_time_min: Number(data.duration),
+      water_temp_c: Number(data.temp),
+      gas_mix: data.gasMix,
+      start_psi: Number(data.startPsi),
+      end_psi: Number(data.endPsi),
+      tank_volume_cuft: Number(data.tankVolume),
+      avg_depth_m: Number(data.avgDepth),
+      air_analytics_json: { sac }
+    }).select().single();
+
+    if (!error && logData) {
+      const eligibleBadges = checkBadgeEligibility({
+        max_depth_m: Number(data.maxDepth),
+        water_temp_c: Number(data.temp),
+        date: data.date
+      });
+
+      for (const badge of eligibleBadges) {
+        const { data: b } = await supabase.from("badges").select("id").eq("slug", badge.slug).single();
+        if (b) {
+          await supabase.from("user_badges").insert({
+            user_id: user.id,
+            badge_id: b.id
+          }); // Swallowed error is intentional for unique constraint
+        }
+      }
+      
+      router.push("/logbook");
+    }
   };
 
   return (
@@ -58,20 +112,23 @@ export default function NewDiveLog() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-ocean-200 mb-2 flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-ocean-400" /> Time In
+                    <Clock className="w-4 h-4 text-ocean-400" /> Duration (min)
                   </label>
                   <input 
-                    type="time"
-                    {...register("timeIn")}
+                    type="number"
+                    {...register("duration")}
                     className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
+                    placeholder="45"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-ocean-200 mb-2">Time Out</label>
+                  <label className="block text-sm font-medium text-ocean-200 mb-2 flex items-center gap-2">
+                     <Users className="w-4 h-4 text-ocean-400" /> Buddy Tag
+                  </label>
                   <input 
-                    type="time"
-                    {...register("timeOut")}
+                    {...register("buddy")}
                     className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
+                    placeholder="@username"
                   />
                 </div>
               </div>
@@ -83,7 +140,34 @@ export default function NewDiveLog() {
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
               <Anchor className="w-5 h-5 text-brand-cyan" /> Profile & Gas
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-ocean-200 mb-2">Tank Size (cuft)</label>
+                <input 
+                  type="number"
+                  {...register("tankVolume")}
+                  defaultValue="80"
+                  className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ocean-200 mb-2">Start PSI</label>
+                <input 
+                  type="number"
+                  {...register("startPsi")}
+                  className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
+                  placeholder="3000"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ocean-200 mb-2">End PSI</label>
+                <input 
+                  type="number"
+                  {...register("endPsi")}
+                  className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
+                  placeholder="500"
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-ocean-200 mb-2">Max Depth (m)</label>
                 <input 
@@ -111,19 +195,27 @@ export default function NewDiveLog() {
                   <option value="Air">Air (21%)</option>
                   <option value="Nitrox 32">Nitrox 32%</option>
                   <option value="Nitrox 36">Nitrox 36%</option>
-                  <option value="Custom">Custom</option>
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-ocean-200 mb-2">Weight (kg)</label>
-                <input 
-                  type="number"
-                  {...register("weight")}
-                  className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
-                  placeholder="0"
-                />
-              </div>
             </div>
+            
+            {(startPsi && endPsi && depth && duration) && (
+              <div className="mt-6 p-4 bg-brand-cyan/10 border border-brand-cyan/30 rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Zap className="w-5 h-5 text-brand-cyan" />
+                  <span className="text-white font-bold">Estimated SAC Rate</span>
+                </div>
+                <span className="text-brand-cyan font-black text-xl">
+                  {calculateSACRate({
+                    startPsi: Number(startPsi),
+                    endPsi: Number(endPsi),
+                    tankVolumeCuft: 80,
+                    avgDepthFt: Number(depth) * 3.28,
+                    durationMin: Number(duration)
+                  })} <span className="text-xs font-normal">cuft/min</span>
+                </span>
+              </div>
+            )}
           </section>
 
           {/* Section 3: Conditions */}

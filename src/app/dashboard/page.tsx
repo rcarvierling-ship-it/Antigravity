@@ -4,6 +4,7 @@ import { HeroSection } from "@/components/home/HeroSection";
 import { QuickStats } from "@/components/home/QuickStats";
 import { RecentDives } from "@/components/home/RecentDives";
 import { FeaturedSites } from "@/components/home/FeaturedSites";
+import { LiveWeatherTile } from "@/components/home/LiveWeatherTile";
 
 import diveSites from "@/lib/data/dive-sites.json";
 
@@ -22,6 +23,22 @@ export default async function DashboardPage() {
     .select("*")
     .eq("id", user.id)
     .single();
+
+  // Fetch Gear Status for alerts
+  const { data: gear } = await supabase
+    .from("gear")
+    .select("last_service_date, service_interval_months")
+    .eq("user_id", user.id);
+
+  let gearAlert = false;
+  if (gear) {
+    const today = new Date();
+    gearAlert = gear.some(item => {
+      const nextDate = new Date(item.last_service_date);
+      nextDate.setMonth(nextDate.getMonth() + item.service_interval_months);
+      return nextDate < today;
+    });
+  }
 
   // If no profile or no certification, they haven't onboarded yet
   if (!profile || !profile.certification_level) {
@@ -54,13 +71,25 @@ export default async function DashboardPage() {
         certLevel={profile.certification_level} 
       />
       
-      <div className="flex-1 w-full max-w-7xl mx-auto flex flex-col items-center px-4 md:px-8">
-        <QuickStats profile={profile} />
-        <RecentDives userId={user.id} />
-        <FeaturedSites 
-          title={`Recommended for ${profile.preferred_diver_type}s`}
-          sites={recommendations.length > 0 ? recommendations : undefined} 
-        />
+      <div className="flex-1 w-full max-w-4xl mx-auto flex flex-col items-center px-4 md:px-0 space-y-12 pb-32">
+        <QuickStats profile={profile} gearAlert={gearAlert} />
+        
+        <section className="w-full">
+          <h2 className="text-[10px] font-black text-ocean-500 uppercase tracking-[0.3em] mb-4 px-2">Live Satellite Link</h2>
+          <LiveWeatherTile />
+        </section>
+
+        <section className="w-full">
+          <h3 className="text-[10px] font-black text-ocean-500 uppercase tracking-[0.3em] mb-4 px-2">Recent Expeditions</h3>
+          <RecentDives userId={user.id} />
+        </section>
+
+        <section className="w-full pb-12">
+          <FeaturedSites 
+            title={`Recommended for ${profile.preferred_diver_type}s`}
+            sites={recommendations.length > 0 ? recommendations : undefined} 
+          />
+        </section>
       </div>
     </main>
   );
