@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Fish, MapPin, Clock } from "lucide-react";
+import { mToFt } from "@/lib/conversions";
+import Link from "next/link";
 
 export function RecentDives({ userId }: { userId?: string }) {
   const [dives, setDives] = useState<any[]>([]);
@@ -68,7 +70,7 @@ export function RecentDives({ userId }: { userId?: string }) {
                   <span key={t} className="text-[10px] bg-ocean-800 text-ocean-200 px-2 py-0.5 rounded-full">{t}</span>
                 ))}
               </div>
-              <p className="text-xs text-brand-teal font-medium">{dive.depth}m max • {dive.duration} min</p>
+              <p className="text-xs text-brand-teal font-medium">{mToFt(dive.depth)} ft max • {dive.duration} min</p>
             </div>
           </div>
         ))}

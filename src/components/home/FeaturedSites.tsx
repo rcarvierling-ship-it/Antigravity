@@ -1,20 +1,17 @@
 import { Star, MapPin } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export function FeaturedSites({ title, sites }: { title?: string; sites?: any[] }) {
-  const defaultSites = [
-    { id: 1, name: "Thistlegorm Wreck", location: "Egypt", rating: 4.9, img: "https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?q=80&w=800&auto=format&fit=crop" },
-    { id: 2, name: "Barracuda Point", location: "Malaysia", rating: 4.8, img: "https://images.unsplash.com/photo-1544551763-46a0e38eeba6?q=80&w=800&auto=format&fit=crop" },
-    { id: 3, name: "Richelieu Rock", location: "Thailand", rating: 4.9, img: "https://images.unsplash.com/photo-1582967788606-a171c1080cb0?q=80&w=800&auto=format&fit=crop" }
-  ];
+  const displaySites = sites || [];
 
-  const displaySites = sites || defaultSites;
+  if (displaySites.length === 0) return null;
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 md:px-0 mb-20 md:mb-10">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-white">{title || "Featured Sites"}</h2>
-        <button className="text-sm text-brand-cyan hover:text-brand-teal transition-colors">Explore Map</button>
+        <Link href="/explore" className="text-sm text-brand-cyan hover:text-brand-teal transition-colors">Explore Map</Link>
       </div>
 
       <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide">

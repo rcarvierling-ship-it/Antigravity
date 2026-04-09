@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Thermometer, Droplets } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { cToF } from "@/lib/conversions";
 
 export function HeroSection({ displayName, certLevel }: { displayName?: string; certLevel?: string }) {
   const [bubbles, setBubbles] = useState<{ id: number; size: number; left: number; duration: number; delay: number }[]>([]);
@@ -56,17 +57,17 @@ export function HeroSection({ displayName, certLevel }: { displayName?: string; 
         >
           <div className="flex items-center gap-3 mb-2">
             <span className="bg-brand-teal/20 text-brand-teal text-xs px-2 py-1 rounded-full font-semibold tracking-wider uppercase border border-brand-teal/30">
-              Next Dive
+              {certLevel || "Diver"} Status
             </span>
-            <span className="text-sm font-medium text-ocean-200">Saturday, 8:00 AM</span>
+            <span className="text-sm font-medium text-ocean-200">Ready for your next adventure?</span>
           </div>
           
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-2 drop-shadow-lg">
-            Blue Hole
+            Hello, {displayName || "Diver"}
           </h1>
           <p className="text-ocean-200 flex items-center gap-4 text-sm md:text-base mb-6">
-            <span className="flex items-center gap-1"><Droplets className="w-4 h-4 text-brand-cyan" /> Belize</span>
-            <span className="flex items-center gap-1"><Thermometer className="w-4 h-4 text-brand-cyan" /> 28°C</span>
+            <span className="flex items-center gap-1"><Droplets className="w-4 h-4 text-brand-cyan" /> Discover the Deep</span>
+            <span className="flex items-center gap-1"><Thermometer className="w-4 h-4 text-brand-cyan" /> 72°F (Air)</span>
           </p>
 
           <div className="flex gap-4">
@@ -74,13 +75,13 @@ export function HeroSection({ displayName, certLevel }: { displayName?: string; 
               href="/explore" 
               className="bg-gradient-to-r from-brand-cyan to-brand-teal text-deep-sea font-bold px-6 py-3 rounded-full flex items-center gap-2 hover:shadow-[0_0_20px_rgba(0,229,255,0.4)] transition-all hover:scale-105"
             >
-              Explore Sites <ArrowRight className="w-5 h-5" />
+              Explore Map <ArrowRight className="w-5 h-5" />
             </Link>
             <Link 
               href="/logbook/new" 
               className="glass px-6 py-3 rounded-full font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2"
             >
-              Log a Dive
+              Start Log
             </Link>
           </div>
         </motion.div>

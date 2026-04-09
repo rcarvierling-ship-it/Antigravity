@@ -15,7 +15,7 @@ export function DarkFooter() {
               <Anchor className="w-6 h-6 text-brand-cyan group-hover:text-white transition-colors relative z-10" />
             </div>
             <span className="text-2xl font-black tracking-tight text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-brand-cyan transition-all">
-              Antigravity
+              Abyss
             </span>
           </Link>
           <p className="text-ocean-400 max-w-sm mb-6 text-sm">
@@ -46,7 +46,7 @@ export function DarkFooter() {
 
       <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-ocean-900/40 relative z-10 flex flex-col md:flex-row justify-between items-center gap-4">
         <p className="text-ocean-500 text-xs text-center md:text-left">
-          © {new Date().getFullYear()} Antigravity Scuba. Built for the depths.
+          © {new Date().getFullYear()} Abyss Scuba. Built for the depths.
         </p>
       </div>
 

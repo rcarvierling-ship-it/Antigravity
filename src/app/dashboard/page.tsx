@@ -7,6 +7,8 @@ import { FeaturedSites } from "@/components/home/FeaturedSites";
 
 import diveSites from "@/lib/data/dive-sites.json";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -27,8 +29,20 @@ export default async function DashboardPage() {
   }
 
   // Get recommendations based on their preferred type from onboarding
+  const preferenceMap: Record<string, string[]> = {
+    "Reef Explorer": ["Reef", "Wall", "Animal Interaction"],
+    "Wreck Diver": ["Wreck"],
+    "Deep Diver": ["Wall", "Wreck", "Technical"],
+    "Cave/Cavern": ["Cave"],
+    "Macro Photography": ["Reef"],
+    "Cold Water": ["Cold Water", "Kelp Forest"]
+  };
+
+  const allowedTypes = preferenceMap[profile.preferred_diver_type as string] || [];
+  
   const recommendations = diveSites
-    .filter(site => site.type === profile.preferred_diver_type)
+    .filter(site => allowedTypes.includes(site.type))
+    .sort((a, b) => ((b as any).rating || 0) - ((a as any).rating || 0))
     .slice(0, 3);
 
   return (

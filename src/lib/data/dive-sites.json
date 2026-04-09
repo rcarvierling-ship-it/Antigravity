@@ -9,7 +9,9 @@
     "depth": 40,
     "type": "Wall",
     "skill": "Advanced",
-    "desc": "Amazing wall dive at Great Blue Hole."
+    "desc": "Amazing wall dive at Great Blue Hole.",
+    "img": "https://images.unsplash.com/photo-1544551763-46a0e38eeba6?q=80&w=800&auto=format&fit=crop",
+    "rating": 4.9
   },
   {
     "key": "molasses",
@@ -21,7 +23,9 @@
     "depth": 12,
     "type": "Reef",
     "skill": "Intermediate",
-    "desc": "Amazing reef dive at Molasses Reef."
+    "desc": "Amazing reef dive at Molasses Reef.",
+    "img": "https://images.unsplash.com/photo-1582967788606-a171c1080cb0?q=80&w=800&auto=format&fit=crop",
+    "rating": 4.8
   },
   {
     "key": "cenote-dos-ojos",
@@ -669,7 +673,9 @@
     "depth": 30,
     "type": "Wreck",
     "skill": "Advanced",
-    "desc": "Amazing wreck dive at SS Thistlegorm."
+    "desc": "Amazing wreck dive at SS Thistlegorm.",
+    "img": "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?q=80&w=800&auto=format&fit=crop",
+    "rating": 4.9
   },
   {
     "key": "ras-mohammed",

@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ArrowRight, Check, Droplets } from "lucide-react";
 
 const steps = [
-  { id: "intro", title: "Welcome to Antigravity." },
+  { id: "intro", title: "Welcome to Abyss." },
   { id: "identity", title: "Who are you?" },
   { id: "experience", title: "Experience Level" },
   { id: "preferences", title: "Diving Preferences" },
@@ -75,6 +75,7 @@ export default function OnboardingPage() {
 
     setLoading(false);
     if (!error) {
+      router.refresh(); // Invalidate server cache
       router.push("/dashboard");
     } else {
       console.error("Failed to update profile:", error);
@@ -109,7 +110,7 @@ export default function OnboardingPage() {
                     <Droplets className="w-8 h-8 text-brand-cyan" />
                   </div>
                 </div>
-                <h1 className="text-4xl font-black text-white mb-4">Welcome to Antigravity</h1>
+                <h1 className="text-4xl font-black text-white mb-4">Welcome to Abyss</h1>
                 <p className="text-ocean-300 text-lg max-w-md mx-auto">Let's set up your diving profile so we can tailor the ocean to your experience.</p>
                 
                 <button 
@@ -158,7 +159,7 @@ export default function OnboardingPage() {
                 <div className="mt-auto pt-10 flex justify-end">
                   <button 
                     onClick={handleNext}
-                    disabled={!formData.displayName || !formData.username}
+                    disabled={!formData.displayName.trim() || !formData.username.trim() || !userId}
                     className="px-8 py-3 rounded-xl bg-white text-deep-sea font-bold disabled:opacity-30 transition-all flex items-center gap-2"
                   >
                     Continue <ArrowRight className="w-4 h-4" />

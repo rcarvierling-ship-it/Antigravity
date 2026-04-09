@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MapPin, Waves, Wind, Thermometer, ArrowRight, Gauge } from "lucide-react";
+import { X, MapPin, Waves, Wind, Thermometer, ArrowRight, Gauge, Cloud, Eye } from "lucide-react";
 import Link from "next/link";
+import { cToF, mToFt, msToMph, cloudCoverToCondition } from "@/lib/conversions";
 
 import { createClient } from "@/lib/supabase/client";
 
@@ -87,9 +88,14 @@ export function SiteDetailModal({ site, onClose }: SiteDetailModalProps) {
             </button>
 
             <div className="absolute bottom-4 left-6 pr-6">
-              <span className="inline-block px-2 py-1 bg-brand-cyan/20 border border-brand-cyan/30 text-brand-cyan text-[10px] font-bold uppercase tracking-wider rounded-lg mb-2">
-                {site.type} • {site.skill || 'Intermediate'}
-              </span>
+              <div className="flex gap-2 mb-2">
+                <span className="px-2 py-1 bg-brand-cyan/20 border border-brand-cyan/30 text-brand-cyan text-[10px] font-bold uppercase tracking-wider rounded-lg">
+                  {site.type} • {site.skill || 'Intermediate'}
+                </span>
+                <span className="px-2 py-1 bg-brand-teal/20 border border-brand-teal/30 text-brand-teal text-[10px] font-bold uppercase tracking-wider rounded-lg">
+                  {mToFt(site.depth)} ft
+                </span>
+              </div>
               <h2 className="text-2xl font-black text-white leading-tight drop-shadow-md">{site.name}</h2>
               <p className="flex items-center gap-1 text-ocean-300 text-sm font-medium mt-1">
                 <MapPin className="w-3.5 h-3.5" /> {site.region}, {site.country}
@@ -113,11 +119,11 @@ export function SiteDetailModal({ site, onClose }: SiteDetailModalProps) {
               </div>
             )}
 
-            <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-4 border-b border-ocean-800/50 pb-2">Live Ocean Conditions</h3>
+            <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-4 border-b border-ocean-800/50 pb-2">Live Conditions (Imperial)</h3>
             
             {loading ? (
               <div className="grid grid-cols-2 gap-3 mb-8">
-                {[1, 2, 3, 4].map(i => (
+                {[1, 2, 3, 4, 5, 6].map(i => (
                   <div key={i} className="h-20 bg-ocean-800/50 rounded-2xl animate-pulse" />
                 ))}
               </div>
@@ -127,36 +133,47 @@ export function SiteDetailModal({ site, onClose }: SiteDetailModalProps) {
               </div>
             ) : weatherData ? (
               <div className="grid grid-cols-2 gap-3 mb-8">
-                {/* Wave Height */}
-                <div className="bg-ocean-900/50 border border-ocean-800 rounded-2xl p-4 flex gap-3 items-center group hover:border-brand-cyan/30 transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-brand-cyan/10 flex items-center justify-center text-brand-cyan">
-                    <Waves className="w-4 h-4" />
+                {/* Air Temp */}
+                <div className="bg-ocean-900/50 border border-ocean-800 rounded-2xl p-4 flex gap-3 items-center group hover:border-yellow-500/30 transition-colors">
+                  <div className="w-8 h-8 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500">
+                    <Thermometer className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-ocean-400 uppercase tracking-widest font-bold">Waves</p>
-                    <p className="text-lg font-black text-white">{weatherData.waveHeight} <span className="text-sm text-ocean-500 font-medium tracking-normal">m</span></p>
-                  </div>
-                </div>
-                
-                {/* Current Speed */}
-                <div className="bg-ocean-900/50 border border-ocean-800 rounded-2xl p-4 flex gap-3 items-center group hover:border-brand-teal/30 transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-brand-teal/10 flex items-center justify-center text-brand-teal">
-                    <Gauge className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-ocean-400 uppercase tracking-widest font-bold">Current</p>
-                    <p className="text-lg font-black text-white">{weatherData.currentSpeed} <span className="text-sm text-ocean-500 font-medium tracking-normal">m/s</span></p>
+                    <p className="text-[10px] text-ocean-400 uppercase tracking-widest font-bold">Air Temp</p>
+                    <p className="text-lg font-black text-white">{cToF(weatherData.airTemperature)}<span className="text-sm text-ocean-500 font-medium tracking-normal">°F</span></p>
                   </div>
                 </div>
 
                 {/* Water Temp */}
                 <div className="bg-ocean-900/50 border border-ocean-800 rounded-2xl p-4 flex gap-3 items-center group hover:border-orange-500/30 transition-colors">
                   <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500">
-                    <Thermometer className="w-4 h-4" />
+                    <Waves className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-ocean-400 uppercase tracking-widest font-bold">Surface</p>
-                    <p className="text-lg font-black text-white">{weatherData.waterTemperature}<span className="text-sm text-ocean-500 font-medium tracking-normal">°C</span></p>
+                    <p className="text-[10px] text-ocean-400 uppercase tracking-widest font-bold">Sea Temp</p>
+                    <p className="text-lg font-black text-white">{cToF(weatherData.waterTemperature)}<span className="text-sm text-ocean-500 font-medium tracking-normal">°F</span></p>
+                  </div>
+                </div>
+
+                {/* Sky Condition */}
+                <div className="bg-ocean-900/50 border border-ocean-800 rounded-2xl p-4 flex gap-3 items-center group hover:border-blue-500/30 transition-colors">
+                  <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
+                    <Cloud className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-ocean-400 uppercase tracking-widest font-bold">Sky</p>
+                    <p className="text-xs font-black text-white uppercase tracking-tight">{cloudCoverToCondition(weatherData.cloudCover)}</p>
+                  </div>
+                </div>
+
+                {/* Wave Height */}
+                <div className="bg-ocean-900/50 border border-ocean-800 rounded-2xl p-4 flex gap-3 items-center group hover:border-brand-cyan/30 transition-colors">
+                  <div className="w-8 h-8 rounded-full bg-brand-cyan/10 flex items-center justify-center text-brand-cyan">
+                    <Gauge className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-ocean-400 uppercase tracking-widest font-bold">Waves</p>
+                    <p className="text-lg font-black text-white">{mToFt(weatherData.waveHeight).slice(0, 3)} <span className="text-sm text-ocean-500 font-medium tracking-normal">ft</span></p>
                   </div>
                 </div>
 
@@ -167,14 +184,25 @@ export function SiteDetailModal({ site, onClose }: SiteDetailModalProps) {
                   </div>
                   <div>
                     <p className="text-[10px] text-ocean-400 uppercase tracking-widest font-bold">Wind</p>
-                    <p className="text-lg font-black text-white">{weatherData.windSpeed} <span className="text-sm text-ocean-500 font-medium tracking-normal">m/s</span></p>
+                    <p className="text-lg font-black text-white">{msToMph(weatherData.windSpeed)} <span className="text-sm text-ocean-500 font-medium tracking-normal">mph</span></p>
+                  </div>
+                </div>
+
+                {/* Current Speed */}
+                <div className="bg-ocean-900/50 border border-ocean-800 rounded-2xl p-4 flex gap-3 items-center group hover:border-brand-teal/30 transition-colors">
+                  <div className="w-8 h-8 rounded-full bg-brand-teal/10 flex items-center justify-center text-brand-teal">
+                    <Waves className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-ocean-400 uppercase tracking-widest font-bold">Current</p>
+                    <p className="text-lg font-black text-white">{msToMph(weatherData.currentSpeed)} <span className="text-sm text-ocean-500 font-medium tracking-normal">mph</span></p>
                   </div>
                 </div>
               </div>
             ) : null}
 
             <Link 
-              href="/logbook/new"
+              href={`/logbook/new?site_id=${site.key}`}
               className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-cyan to-brand-teal text-deep-sea font-bold text-center flex items-center justify-center gap-2 hover:shadow-[0_0_20px_rgba(0,229,255,0.3)] transition-all hover:-translate-y-0.5"
             >
               Log Dive Here <ArrowRight className="w-4 h-4" />

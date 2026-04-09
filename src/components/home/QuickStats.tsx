@@ -1,8 +1,8 @@
 export function QuickStats({ profile }: { profile?: any }) {
   const stats = [
-    { label: "Total Dives", value: profile?.total_dives?.toString() || "0", subtitle: profile?.certification_level || "No Rank" },
-    { label: "Max Depth", value: "0", subtitle: "Personal Record" },
-    { label: "Bottom Time", value: "0", subtitle: "Underwater" },
+    { label: "Total Dives", value: profile?.total_dives || "0", subtitle: profile?.certification_level || "No Rank" },
+    { label: "Max Depth", value: "---", subtitle: "ft" },
+    { label: "Avg View", value: "---", subtitle: "ft" },
   ];
 
   return (

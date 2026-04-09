@@ -1,15 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { User, Award, Activity, Settings, Edit3 } from "lucide-react";
 import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, AreaChart, Area } from "recharts";
+import { createClient } from "@/lib/supabase/client";
+import { cToF, mToFt } from "@/lib/conversions";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("stats");
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function getProfile() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+        setProfile(data);
+      }
+      setLoading(false);
+    }
+    getProfile();
+  }, []);
 
   const monthlyDives: any[] = [];
-
   const depthHistory: any[] = [];
+
+  if (loading) {
+    return <div className="min-h-screen bg-deep-sea flex items-center justify-center text-ocean-300 font-bold tracking-widest uppercase">Initializing Satellite Link...</div>;
+  }
 
   return (
     <main className="w-full min-h-screen px-4 md:px-8 py-8 pt-24 md:pt-12 pb-24">
@@ -23,21 +48,21 @@ export default function ProfilePage() {
                 <User className="w-12 h-12 text-ocean-400" />
               </div>
             </div>
-            <button className="absolute bottom-0 right-0 p-2 glass rounded-full bg-ocean-800 border-ocean-600 hover:bg-ocean-700 transition">
+            <Link href="/onboarding" className="absolute bottom-0 right-0 p-2 glass rounded-full bg-ocean-800 border-ocean-600 hover:bg-ocean-700 transition block">
               <Edit3 className="w-4 h-4 text-white" />
-            </button>
+            </Link>
           </div>
 
           <div className="flex-1 mt-2 md:mt-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h1 className="text-3xl font-bold text-white mb-1">Guest Diver</h1>
-                <p className="text-brand-cyan text-sm font-semibold tracking-widest uppercase">Advanced Open Water</p>
-                <p className="text-ocean-400 text-sm mt-2 max-w-sm">Passionate wreck diver aiming for technical trimix certification. Based in Miami, FL.</p>
+                <h1 className="text-3xl font-bold text-white mb-1">{profile?.display_name || "Guest Diver"}</h1>
+                <p className="text-brand-cyan text-sm font-semibold tracking-widest uppercase">{profile?.certification_level || "No Rank"}</p>
+                <p className="text-ocean-400 text-sm mt-2 max-w-sm">{profile?.bio || `Preferred Diving: ${profile?.preferred_diver_type || "Explorer"}`}</p>
               </div>
-              <button className="p-2 glass rounded-xl text-ocean-300 hover:text-white self-center md:self-start">
+              <Link href="/settings" className="p-2 glass rounded-xl text-ocean-300 hover:text-white self-center md:self-start block">
                 <Settings className="w-5 h-5" />
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -62,14 +87,14 @@ export default function ProfilePage() {
           <div className="space-y-6">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               {[
-                { label: "Total Dives", val: "42" },
-                { label: "Hours UW", val: "34" },
-                { label: "Max Depth", val: "40m" },
-                { label: "Coldest Temp", val: "18°C" },
+                { label: "Total Dives", val: profile?.total_dives || "0", unit: "" },
+                { label: "Hours UW", val: "---", unit: "" },
+                { label: "Max Depth", val: "---", unit: "ft" },
+                { label: "Coldest Temp", val: "---", unit: "°F" },
               ].map(s => (
                 <div key={s.label} className="glass-card p-4 rounded-2xl text-center">
                   <h3 className="text-[10px] text-ocean-400 uppercase tracking-widest mb-1">{s.label}</h3>
-                  <p className="text-2xl font-bold text-white">{s.val}</p>
+                  <p className="text-2xl font-bold text-white">{s.val} <span className="text-xs text-ocean-500 font-medium">{s.unit}</span></p>
                 </div>
               ))}
             </div>

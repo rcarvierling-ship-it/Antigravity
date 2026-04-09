@@ -1,4 +1,4 @@
-# Antigravity 🌊
+# Abyss 🌊
 
 A premium, mobile-first scuba diving companion. Built with Next.js, Supabase, TailwindCSS 4, and Framer Motion. 
 

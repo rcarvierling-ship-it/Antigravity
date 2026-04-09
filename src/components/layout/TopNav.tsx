@@ -52,7 +52,7 @@ export function TopNav() {
             </div>
           </div>
           <span className="text-xl font-bold tracking-tight text-white group-hover:text-glow-cyan transition-all duration-300">
-            Antigravity
+            Abyss
           </span>
         </Link>
         

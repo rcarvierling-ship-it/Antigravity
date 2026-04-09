@@ -9,10 +9,10 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Antigravity | Premium Scuba App",
-  description: "Your ultimate underwater companion. Discover, track, and share your scuba diving adventures.",
+  title: "Abyss | Premium Scuba App",
+  description: "The ultimate professional dive log and exploration platform for serious divers.",
   appleWebApp: {
-    title: "Antigravity",
+    title: "Abyss",
     statusBarStyle: "black-translucent",
   },
 };
