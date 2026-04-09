@@ -55,7 +55,7 @@ export default function ExplorePage() {
       
       {/* Sidebar Panel */}
       <div className={`z-10 bg-deep-sea border-r border-ocean-800/50 flex flex-col h-full overflow-hidden shadow-2xl transition-transform duration-300 md:translate-x-0 ${mobileView === "list" ? "translate-x-0" : "-translate-x-full md:translate-x-0 absolute md:relative w-full md:w-auto h-full"}`}>
-        <div className="p-5 h-full flex flex-col pt-6 overflow-hidden">
+        <div className="p-5 h-full flex flex-col pt-10 md:pt-6 overflow-hidden">
           <div className="flex items-center justify-between mb-6 shrink-0">
             <h1 className="text-2xl font-black text-white tracking-tight">Explore Sites</h1>
             <button className="p-2 glass rounded-xl text-ocean-400 hover:text-white transition-colors">
