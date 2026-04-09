@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ocean-50: #f4f7f9;
+  --color-ocean-100: #e2ebf1;
+  --color-ocean-200: #c1d5e3;
+  --color-ocean-300: #93b7cd;
+  --color-ocean-400: #6296b4;
+  --color-ocean-500: #427a9b;
+  --color-ocean-600: #336181;
+  --color-ocean-700: #2a4f6a;
+  --color-ocean-800: #264359;
+  --color-ocean-900: #23394d;
+  --color-ocean-950: #0a111a;
+  
+  --color-deep-sea: #030810;
+  --color-mid-water: #061121;
+  --color-shallow: #0f2747;
+  
+  --color-brand-cyan: #00e5ff;
+  --color-brand-teal: #00ffcc;
+}
+
+@layer base {
+  :root {
+    --background: var(--color-deep-sea);
+    --foreground: #f4f7f9;
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Glassmorphism utilities */
+@utility glass {
+  background: rgba(10, 17, 26, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+@utility glass-card {
+  background: linear-gradient(145deg, rgba(35, 57, 77, 0.2) 0%, rgba(10, 17, 26, 0.4) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(147, 183, 205, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Glow effects */
+@utility text-glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5), 0 0 20px rgba(0, 229, 255, 0.3);
+}
+
+@utility text-glow-teal {
+  text-shadow: 0 0 10px rgba(0, 255, 204, 0.5), 0 0 20px rgba(0, 255, 204, 0.3);
+}
+
+@utility box-glow-cyan {
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.2), 0 0 30px rgba(0, 229, 255, 0.1);
+}
