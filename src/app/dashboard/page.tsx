@@ -1,13 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { HeroSection } from "@/components/home/HeroSection";
-import { QuickStats } from "@/components/home/QuickStats";
-import { RecentDives } from "@/components/home/RecentDives";
+import { HeroMission } from "@/components/home/HeroMission";
+import { TechnicalHUD } from "@/components/home/TechnicalHUD";
+import { ExpeditionFeed } from "@/components/home/ExpeditionFeed";
 import { FeaturedSites } from "@/components/home/FeaturedSites";
 import { LiveWeatherTile } from "@/components/home/LiveWeatherTile";
-import { MissionAlerts } from "@/components/buddies/MissionAlerts";
 
 import diveSites from "@/lib/data/dive-sites.json";
+import { Radio } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -64,34 +64,46 @@ export default async function DashboardPage() {
     .slice(0, 3);
 
   return (
-    <main className="w-full min-h-screen flex flex-col relative pb-8">
-      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-ocean-900 via-deep-sea to-deep-sea -z-10" />
+    <main className="w-full min-h-screen flex flex-col relative pb-20 bg-deep-sea">
+      {/* Global Mission Background */}
+      <div className="fixed inset-0 pointer-events-none hud-grid opacity-10 -z-10" />
+      <div className="fixed inset-0 pointer-events-none bg-gradient-to-b from-ocean-900/20 via-deep-sea to-deep-sea -z-20" />
 
-      <HeroSection 
+      {/* Hero Header */}
+      <HeroMission 
         displayName={profile.display_name} 
         certLevel={profile.certification_level} 
       />
       
-      <div className="flex-1 w-full max-w-4xl mx-auto flex flex-col items-center px-4 md:px-0 space-y-12 pb-32">
-        <MissionAlerts />
-        <QuickStats profile={profile} gearAlert={gearAlert} />
+      <div className="flex-1 w-full max-w-6xl mx-auto flex flex-col space-y-16 px-4 md:px-0">
         
-        <section className="w-full">
-          <h2 className="text-[10px] font-black text-ocean-500 uppercase tracking-[0.3em] mb-4 px-2">Live Satellite Link</h2>
-          <LiveWeatherTile />
-        </section>
+        {/* Main Telemetry Cluster */}
+        <TechnicalHUD profile={profile} gearAlert={gearAlert} />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+           {/* Left Column: Timeline & Feed */}
+           <div className="lg:col-span-8">
+              <ExpeditionFeed userId={user.id} />
+           </div>
 
-        <section className="w-full">
-          <h3 className="text-[10px] font-black text-ocean-500 uppercase tracking-[0.3em] mb-4 px-2">Recent Expeditions</h3>
-          <RecentDives userId={user.id} />
-        </section>
+           {/* Right Column: Environment & Meta Intelligence */}
+           <div className="lg:col-span-4 space-y-12">
+              <section>
+                <div className="flex items-center gap-2 mb-6">
+                  <Radio className="w-4 h-4 text-brand-cyan" />
+                  <h2 className="text-[10px] font-black text-ocean-500 uppercase tracking-[0.4em]">Environmental Intel</h2>
+                </div>
+                <LiveWeatherTile />
+              </section>
 
-        <section className="w-full pb-12">
-          <FeaturedSites 
-            title={`Recommended for ${profile.preferred_diver_type}s`}
-            sites={recommendations.length > 0 ? recommendations : undefined} 
-          />
-        </section>
+              <section className="pb-12 border-t border-ocean-800/30 pt-12">
+                <FeaturedSites 
+                  title={`Strategy: ${profile.preferred_diver_type}s`}
+                  sites={recommendations.length > 0 ? recommendations : undefined} 
+                />
+              </section>
+           </div>
+        </div>
       </div>
     </main>
   );
