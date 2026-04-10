@@ -141,18 +141,8 @@ export function SiteDetailModal({ site, onClose }: SiteDetailModalProps) {
                 </div>
               )}
 
-              <h3 className="text-[10px] font-bold text-ocean-400 uppercase tracking-widest mb-4 border-b border-ocean-800/30 pb-2">Live Satellite Telemetry</h3>
+              <h3 className="text-[10px] font-bold text-ocean-400 uppercase tracking-widest mb-4 border-b border-ocean-800/30 pb-2">Live Marine Conditions</h3>
               
-              {loading ? (
-                <div className="grid grid-cols-2 gap-3 mb-8">
-                  {[1, 2, 3, 4, 5, 6].map(i => (
-                    <div key={i} className="h-20 bg-ocean-800/20 rounded-2xl animate-pulse" />
-                  ))}
-                </div>
-              ) : error ? (
-                <div className="p-4 bg-red-950/20 border border-red-900/40 rounded-2xl text-red-300 text-xs mb-8 flex items-center gap-3">
-                  <Cloud className="w-5 h-5 text-red-400" /> Telemetry link offline. Check connection.
-                </div>
               {loading ? (
                 <div className="grid grid-cols-2 gap-3 mb-8">
                   {[1, 2, 3, 4, 5, 6].map(i => (

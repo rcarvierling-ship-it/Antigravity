@@ -29,6 +29,16 @@ export interface DiveSiteConditions {
     cloudCover: ConditionMetric;
     visibility: ConditionMetric;
   };
+  analysis: {
+    diveabilityScore: number;
+    overallRating: "Excellent" | "Good" | "Fair" | "Poor" | "Avoid";
+    currentRisk: "Low" | "Moderate" | "High";
+    surgeRisk: "Low" | "Moderate" | "High";
+    beginnerSuitability: "Good" | "Caution" | "Poor";
+    summary: string;
+    recommendedFor: string;
+    notes: string[];
+  };
   meta: {
     primarySource: string;
     confidenceSummary: Confidence;

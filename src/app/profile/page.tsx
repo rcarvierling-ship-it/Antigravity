@@ -92,6 +92,7 @@ export default function ProfilePage() {
                 <p className="text-brand-cyan text-sm font-semibold tracking-widest uppercase">{profile?.certification_level || "No Rank"}</p>
                 <div className="flex gap-2 mt-4">
                   <Link href="/profile/gear" className="px-4 py-2 rounded-xl bg-ocean-800/80 border border-ocean-700/50 text-ocean-300 text-xs font-bold hover:text-white hover:bg-ocean-700 transition">🤿 My Gear Vault</Link>
+                  <Link href="/tools" className="px-4 py-2 rounded-xl bg-brand-teal/10 border border-brand-teal/30 text-brand-teal text-xs font-bold hover:bg-brand-teal/20 transition">🛠️ Abyss Tools</Link>
                 </div>
               </div>
               <Link href="/settings" className="p-2 glass rounded-xl text-ocean-300 hover:text-white self-center md:self-start block">

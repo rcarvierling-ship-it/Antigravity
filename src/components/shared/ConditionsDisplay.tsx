@@ -79,75 +79,85 @@ function ConfidenceBadge({ confidence }: { confidence: Confidence }) {
 }
 
 export function ConditionsGrid({ data }: { data: any }) {
-  const { marine, weather, meta } = data;
-  const isProtected = ['bridge', 'shore', 'inlet', 'muck'].includes(meta.siteCategory);
+  const { marine, weather, analysis, meta } = data;
+  const isProtected = meta.siteCategory === 'protected' || meta.siteCategory === 'semi-protected';
+
+  const ratingColors = {
+    Excellent: "text-green-500 border-green-500/20 bg-green-500/5",
+    Good: "text-brand-cyan border-brand-cyan/20 bg-brand-cyan/5",
+    Fair: "text-yellow-500 border-yellow-500/20 bg-yellow-500/5",
+    Poor: "text-orange-500 border-orange-500/20 bg-orange-500/5",
+    Avoid: "text-red-500 border-red-500/20 bg-red-500/5"
+  };
+
+  const riskColors = {
+    Low: "text-green-500",
+    Moderate: "text-yellow-500",
+    High: "text-red-500"
+  };
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Interpretation Header */}
-      <div className="flex items-center justify-between p-3 bg-ocean-950/40 border border-ocean-800/30 rounded-2xl">
-         <div className="flex items-center gap-2">
-            <div className={cn("w-2 h-2 rounded-full animate-pulse", meta.confidenceSummary === 'High' ? 'bg-green-500' : 'bg-brand-cyan')} />
-            <p className="text-[10px] text-ocean-300 font-bold uppercase tracking-widest">
-               Primary Interpretation: <span className="text-white">{meta.interpretationLabel}</span>
-            </p>
-         </div>
-         <div className="text-[9px] text-ocean-500 font-black uppercase">
-            Unit: Metric
-         </div>
-      </div>
-
-      {/* Dynamic Grid Layout */}
-      <div className="grid grid-cols-2 gap-3">
-        {isProtected ? (
-          <>
-            {/* Protected Sites: Tides and Temps first */}
-            <ConditionsMetric label="Tide Level" metric={marine.tide} icon={<Gauge className="w-4 h-4" />} className="border-brand-teal/20" />
-            <ConditionsMetric label="Sea Temp" metric={marine.seaSurfaceTemp} icon={<Thermometer className="w-4 h-4" />} />
-            <ConditionsMetric label="Wind Speed" metric={weather.windSpeed} icon={<Wind className="w-4 h-4" />} />
-            <ConditionsMetric label="Air Temp" metric={weather.airTemp} icon={<Thermometer className="w-4 h-4" />} />
-            <ConditionsMetric label="Wave Height (Offshore)" metric={marine.waveHeight} icon={<Waves className="w-4 h-4" />} className="opacity-60" />
-            <ConditionsMetric label="Cloud Cover" metric={weather.cloudCover} icon={<Cloud className="w-4 h-4" />} />
-          </>
-        ) : (
-          <>
-            {/* Offshore Sites: Waves and Wind first */}
-            <ConditionsMetric label="Wave Height" metric={marine.waveHeight} icon={<Waves className="w-4 h-4" />} className="border-brand-cyan/20" />
-            <ConditionsMetric label="Wave Period" metric={marine.wavePeriod} icon={<Clock className="w-4 h-4" />} />
-            <ConditionsMetric label="Wind Speed" metric={weather.windSpeed} icon={<Wind className="w-4 h-4" />} />
-            <ConditionsMetric label="Sea Temp" metric={marine.seaSurfaceTemp} icon={<Thermometer className="w-4 h-4" />} />
-            <ConditionsMetric label="Current Velocity" metric={marine.currentSpeed} icon={<Waves className="w-4 h-4" />} />
-            <ConditionsMetric label="Tide Level" metric={marine.tide} icon={<Gauge className="w-4 h-4" />} className="opacity-60" />
-          </>
-        )}
-      </div>
-
-      {/* Site-Specific Warnings / Advice */}
-      {isProtected && (
-        <div className="p-4 bg-brand-teal/5 border border-brand-teal/20 rounded-2xl flex items-start gap-3">
-          <Info className="w-4 h-4 text-brand-teal mt-0.5" />
-          <div className="flex flex-col gap-1">
-             <p className="text-sm text-white font-bold tracking-tight leading-none italic">Protected Environment Telemetry</p>
-             <p className="text-[11px] text-ocean-400 font-medium leading-relaxed">
-                This site is tide-sensitive. Best conditions are typically around slack/high tide. 
-                Wave height reflects offshore exposed water and may not represent the protected area.
-             </p>
+      {/* 1. Mission Intelligence Dashboard */}
+      <div className="glass-card rounded-3xl p-6 border border-ocean-800/50 bg-ocean-950/20">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <ShieldCheck className="w-4 h-4 text-brand-cyan" />
+              <span className="text-[10px] font-black text-brand-cyan uppercase tracking-widest">Diver Intelligence Engine</span>
+            </div>
+            <h2 className="text-2xl font-black text-white leading-tight">{analysis.summary}</h2>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-[9px] font-bold text-ocean-500 uppercase tracking-widest">Diveability Score</p>
+              <p className="text-4xl font-black text-white tracking-tighter">{analysis.diveabilityScore}<span className="text-sm text-ocean-600">%</span></p>
+            </div>
+            <div className={cn("px-4 py-2 rounded-2xl border font-black uppercase tracking-widest text-xs h-fit", ratingColors[analysis.overallRating as keyof typeof ratingColors])}>
+              {analysis.overallRating}
+            </div>
           </div>
         </div>
-      )}
 
-      {!isProtected && meta.confidenceSummary === 'Medium' && (
-        <div className="p-4 bg-orange-500/5 border border-orange-500/20 rounded-2xl flex items-start gap-3">
-          <ShieldAlert className="w-4 h-4 text-orange-500 mt-0.5" />
+        <div className="grid grid-cols-3 gap-4 border-t border-ocean-800/30 pt-6">
           <div className="flex flex-col gap-1">
-             <p className="text-sm text-orange-200 font-bold tracking-tight leading-none italic">Model-Based Dashboard</p>
-             <p className="text-[11px] text-ocean-400 font-medium leading-relaxed">
-                Telemetry is currently based on regional model data. Remote site station mismatch may occur. 
-                Verify conditions on-site before deployment.
-             </p>
+            <span className="text-[8px] font-black text-ocean-500 uppercase tracking-tighter leading-none mb-1">Current Risk</span>
+            <span className={cn("text-xs font-bold", riskColors[analysis.currentRisk as keyof typeof riskColors])}>{analysis.currentRisk}</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-[8px] font-black text-ocean-500 uppercase tracking-tighter leading-none mb-1">Surge Risk</span>
+            <span className={cn("text-xs font-bold", riskColors[analysis.surgeRisk as keyof typeof riskColors])}>{analysis.surgeRisk}</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-[8px] font-black text-ocean-500 uppercase tracking-tighter leading-none mb-1">Suitability</span>
+            <span className={cn("text-xs font-bold", 
+              analysis.beginnerSuitability === 'Good' ? 'text-brand-cyan' : 
+              analysis.beginnerSuitability === 'Caution' ? 'text-yellow-500' : 'text-red-500'
+            )}>
+              {analysis.beginnerSuitability}
+            </span>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* 2. Primary Metrics Row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <ConditionsMetric label="Wave Height" metric={marine.waveHeight} icon={<Waves className="w-4 h-4" />} />
+        <ConditionsMetric label="Water Temp" metric={marine.seaSurfaceTemp} icon={<Thermometer className="w-4 h-4" />} />
+        <ConditionsMetric label="Current" metric={marine.currentSpeed} icon={<Gauge className="w-4 h-4" />} />
+        <ConditionsMetric label="Wind" metric={weather.windSpeed} icon={<Wind className="w-4 h-4" />} />
+      </div>
+
+      {/* 3. Site-Specific Mission Notes */}
+      <div className="space-y-2">
+        {analysis.notes.map((note: string, i: number) => (
+          <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-ocean-900/30 border border-ocean-800/50">
+            <Info className="w-3.5 h-3.5 text-ocean-500 mt-0.5" />
+            <p className="text-[11px] text-ocean-300 font-medium leading-tight">{note}</p>
+          </div>
+        ))}
+      </div>
 
       <ConditionsFooter meta={meta} />
     </div>
@@ -197,10 +207,21 @@ export function ConditionsPreview({ lat, lng, country, type }: { lat: number, ln
     );
   }
 
-  const { marine, weather, meta } = data;
+  const { marine, weather, analysis, meta } = data;
+
+  const ratingColors = {
+    Excellent: "bg-green-500",
+    Good: "bg-brand-cyan",
+    Fair: "bg-yellow-500",
+    Poor: "bg-orange-500",
+    Avoid: "bg-red-500"
+  };
 
   return (
     <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-ocean-900 border border-ocean-800">
+        <span className="text-[9px] font-black text-white">{analysis.diveabilityScore}%</span>
+      </div>
       <div className="flex items-center gap-1.5">
         <Waves className="w-2.5 h-2.5 text-brand-cyan" />
         <span className="text-[10px] font-black text-white">{marine.waveHeight.value}{marine.waveHeight.unit}</span>
@@ -214,9 +235,8 @@ export function ConditionsPreview({ lat, lng, country, type }: { lat: number, ln
         <span className="text-[10px] font-black text-white">{weather.windSpeed.value}</span>
       </div>
       <div className="ml-auto flex items-center gap-2">
-        {meta.confidenceSummary === 'High' && <span className="text-[7px] text-green-500 font-black uppercase">Station</span>}
         <div className={cn("w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)]", 
-          meta.confidenceSummary === 'High' ? 'bg-green-500' : 'bg-brand-cyan'
+          ratingColors[analysis.overallRating as keyof typeof ratingColors] || 'bg-brand-cyan'
         )} />
       </div>
     </div>

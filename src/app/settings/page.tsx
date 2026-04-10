@@ -4,9 +4,30 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ChevronLeft, LogOut, Shield, Bell, Smartphone, Globe } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
   const router = useRouter();
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function getSettings() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+        setProfile(data);
+      }
+      setLoading(false);
+    }
+    getSettings();
+  }, []);
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -14,6 +35,20 @@ export default function SettingsPage() {
     router.push("/auth/login");
     router.refresh();
   };
+
+  const updatePreference = async (field: string, value: any) => {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("profiles")
+      .update({ [field]: value })
+      .eq("id", profile.id);
+    
+    if (!error) {
+      setProfile({ ...profile, [field]: value });
+    }
+  };
+
+  if (loading) return <div className="min-h-screen bg-deep-sea flex items-center justify-center text-ocean-300 font-bold tracking-widest uppercase">Fetching Mission Config...</div>;
 
   return (
     <main className="w-full min-h-screen px-4 md:px-8 py-8 pt-24 md:pt-12 pb-24 bg-deep-sea">
@@ -33,20 +68,28 @@ export default function SettingsPage() {
             <h2 className="text-xs font-bold text-ocean-400 uppercase tracking-widest mb-6 px-2">Account Preferences</h2>
             
             <div className="space-y-2">
-              <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-ocean-900/40 transition-colors group cursor-not-allowed">
+              <div 
+                onClick={() => updatePreference('unit_system', profile.unit_system === 'metric' ? 'imperial' : 'metric')}
+                className="flex items-center justify-between p-4 rounded-2xl hover:bg-ocean-900/40 transition-colors group cursor-pointer"
+              >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-ocean-800 flex items-center justify-center text-ocean-300 group-hover:text-brand-cyan transition-colors">
                     <Globe className="w-5 h-5" />
                   </div>
                   <div>
                     <span className="block text-white font-medium">Units</span>
-                    <span className="text-xs text-ocean-500">U.S. Customary (Imperial)</span>
+                    <span className="text-xs text-ocean-500">{profile?.unit_system === 'metric' ? 'Metric (m, °C, bar)' : 'Imperial (ft, °F, psi)'}</span>
                   </div>
                 </div>
-                <span className="text-[10px] bg-brand-cyan/20 text-brand-cyan px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Locked</span>
+                <div className={cn(
+                  "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all",
+                  profile?.unit_system === 'metric' ? "bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30" : "bg-ocean-800 text-ocean-400 border-ocean-700"
+                )}>
+                  {profile?.unit_system}
+                </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-ocean-900/40 transition-colors group cursor-not-allowed">
+              <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-ocean-900/40 transition-colors group cursor-not-allowed opacity-50">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-ocean-800 flex items-center justify-center text-ocean-300 group-hover:text-brand-cyan transition-colors">
                     <Bell className="w-5 h-5" />
@@ -58,7 +101,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-ocean-900/40 transition-colors group cursor-not-allowed">
+              <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-ocean-900/40 transition-colors group cursor-not-allowed opacity-50">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-ocean-800 flex items-center justify-center text-ocean-300 group-hover:text-brand-cyan transition-colors">
                     <Shield className="w-5 h-5" />
@@ -97,7 +140,7 @@ export default function SettingsPage() {
           </button>
 
           <p className="text-center text-ocean-600 text-[10px] tracking-widest uppercase mt-8">
-            Abyss Scuba v1.0.4 • Built for the Depths
+            Abyss Scuba v1.1.0 • Built for the Depths
           </p>
         </div>
       </div>

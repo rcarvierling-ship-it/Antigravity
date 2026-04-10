@@ -1,24 +1,124 @@
 import { Confidence, DiveSiteConditions, ConditionMetric, SiteCategory } from "@/types/conditions";
+import { DiveIntelligenceService, SiteMetadata } from "./dive-intelligence";
 
 const OPEN_METEO_MARINE_URL = "https://marine-api.open-meteo.com/v1/marine";
 const OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
 const NOAA_STATIONS_URL = "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json";
 const NOAA_DATA_URL = "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter";
+const STORMGLASS_URL = "https://api.stormglass.io/v2/weather/point";
 
-export async function getDiveSiteConditions(lat: number, lon: number, country?: string, diveType?: string): Promise<DiveSiteConditions> {
+export async function getDiveSiteConditions(
+  lat: number, 
+  lon: number, 
+  country?: string, 
+  diveType?: string,
+  siteMetadata?: SiteMetadata | null
+): Promise<DiveSiteConditions> {
   const isUS = country?.toLowerCase() === 'usa' || country?.toLowerCase() === 'united states' || country?.toLowerCase() === 'us';
   const category = getSiteCategory(diveType || '');
   
+  // Default metadata if none provided (conservative fallback)
+  const meta: SiteMetadata = siteMetadata || {
+    id: 'unknown',
+    name: 'Unknown Site',
+    dive_type: diveType || 'Unknown',
+    skill_level: 'Beginner',
+    max_depth_m: 20,
+    site_exposure: 'exposed',
+    protection_level: 'low'
+  };
+
+  let rawData: DiveSiteConditions;
+
+  // PRIMARY: Stormglass
   try {
-    if (isUS) {
-      const data = await fetchNOAAData(lat, lon, category);
-      if (data) return data;
+    const stormGlass = await fetchStormGlassData(lat, lon, category);
+    if (stormGlass) {
+      rawData = stormGlass;
+    } else {
+      throw new Error("Stormglass returned null");
     }
   } catch (err) {
-    console.warn("NOAA Fetch validation failed or network error. Fallback to models:", err);
+    console.warn("Stormglass fetch failed, falling back to NOAA/OpenMeteo:", err);
+    
+    // SECONDARY: NOAA (Regional Station Data)
+    try {
+      if (isUS) {
+        const noaa = await fetchNOAAData(lat, lon, category);
+        if (noaa) {
+          rawData = noaa;
+        } else {
+          rawData = await fetchOpenMeteoData(lat, lon, category);
+        }
+      } else {
+        rawData = await fetchOpenMeteoData(lat, lon, category);
+      }
+    } catch (noaaErr) {
+      rawData = await fetchOpenMeteoData(lat, lon, category);
+    }
   }
 
-  return fetchOpenMeteoData(lat, lon, category);
+  // Apply Intelligence Engine
+  return DiveIntelligenceService.analyze(rawData, meta);
+}
+
+async function fetchStormGlassData(lat: number, lon: number, category: SiteCategory): Promise<DiveSiteConditions | null> {
+  const apiKey = process.env.STORMGLASS_API_KEY;
+  if (!apiKey) {
+    console.warn("STORMGLASS_API_KEY missing - skipping Stormglass primary fetch.");
+    return null;
+  }
+
+  const params = "waveHeight,swellHeight,swellDirection,swellPeriod,waterTemperature,currentSpeed,currentDirection,windSpeed,windDirection,airTemperature";
+  const res = await fetch(`${STORMGLASS_URL}?lat=${lat}&lng=${lon}&params=${params}`, {
+    headers: { 'Authorization': apiKey }
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    console.error("Stormglass API Error:", err);
+    return null;
+  }
+
+  const data = await res.json();
+  const current = data.hours[0]; // Nearest hour
+
+  const m = (val: any, unit: string) => ({
+    value: val !== undefined ? val : "Unavailable",
+    unit,
+    source: "Stormglass",
+    confidence: "Medium" as Confidence,
+    isObserved: false, // Model-based
+    distanceKm: 0
+  });
+
+  return {
+    marine: {
+      waveHeight: m(current.waveHeight?.sg, "m"),
+      waveDirection: m(current.swellDirection?.sg, "°"), // Using swell direction as proxy if waveDir missing
+      wavePeriod: m(current.swellPeriod?.sg, "s"),
+      seaSurfaceTemp: m(current.waterTemperature?.sg, "°C"),
+      currentSpeed: m(current.currentSpeed?.sg, "m/s"),
+      currentDirection: m(current.currentDirection?.sg, "°"),
+      tide: { value: "---", unit: "", source: "Stormglass", confidence: "Low" }
+    },
+    weather: {
+      airTemp: m(current.airTemperature?.sg, "°C"),
+      windSpeed: m(current.windSpeed?.sg, "m/s"),
+      windDirection: m(current.windDirection?.sg, "°"),
+      precipitationChance: { value: "---", unit: "", source: "Stormglass", confidence: "Low" },
+      cloudCover: { value: "---", unit: "", source: "Stormglass", confidence: "Low" },
+      visibility: { value: "---", unit: "", source: "Stormglass", confidence: "Low" }
+    },
+    meta: {
+      primarySource: "Stormglass",
+      confidenceSummary: "Medium",
+      note: "High-fidelity marine model data curated for dive mission profiles.",
+      lastUpdated: new Date().toISOString(),
+      siteCategory: category,
+      interpretationLabel: "Stormglass Marine Model"
+    }
+  };
 }
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
