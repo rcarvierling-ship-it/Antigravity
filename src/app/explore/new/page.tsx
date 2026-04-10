@@ -221,6 +221,33 @@ export default function NewDiveSite() {
                   />
                 </div>
                 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <div className="space-y-2">
+                     <label className="text-[10px] font-black text-ocean-400 uppercase tracking-widest ml-1">Shore Access Type</label>
+                     <select 
+                       value={formData.shore_access_type}
+                       onChange={(e) => setFormData({...formData, shore_access_type: e.target.value})}
+                       className="w-full bg-ocean-950/50 border border-ocean-800 rounded-2xl p-4 text-white focus:outline-none focus:border-brand-cyan transition-all font-medium appearance-none"
+                     >
+                       {['Boat', 'Beach Walk', 'Giant Stride (Rocks)', 'Ladder', 'Pier'].map(t => (
+                         <option key={t} value={t} className="bg-deep-sea">{t}</option>
+                       ))}
+                     </select>
+                   </div>
+                   <div className="space-y-2">
+                     <label className="text-[10px] font-black text-ocean-400 uppercase tracking-widest ml-1">Site Exposure</label>
+                     <select 
+                       value={formData.site_exposure}
+                       onChange={(e) => setFormData({...formData, site_exposure: e.target.value})}
+                       className="w-full bg-ocean-950/50 border border-ocean-800 rounded-2xl p-4 text-white focus:outline-none focus:border-brand-cyan transition-all font-medium appearance-none"
+                     >
+                       {['exposed', 'semi-protected', 'protected'].map(t => (
+                         <option key={t} value={t} className="bg-deep-sea uppercase">{t}</option>
+                       ))}
+                     </select>
+                   </div>
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-ocean-400 uppercase tracking-widest ml-1">Site Intel (Short Description)</label>
                   <textarea 

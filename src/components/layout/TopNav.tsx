@@ -57,25 +57,39 @@ export function TopNav() {
       setLoading(false);
     };
 
-    // 1. Initial Identity Check
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        console.log("[ABYSS HUD] Active session detected on startup.");
-        setUser(user);
-        fetchProfileData(user.id);
-      } else {
-        console.log("[ABYSS HUD] No active session detected. Awaiting authorization.");
+    const checkUserIdentity = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          console.log("[ABYSS HUD] Active session detected on startup.");
+          setUser(session.user);
+          await fetchProfileData(session.user.id);
+        } else {
+          console.log("[ABYSS HUD] No active session detected. Awaiting authorization.");
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("[ABYSS HUD] Identity check failed:", err);
         setLoading(false);
       }
-    });
+    };
+
+    checkUserIdentity();
 
     // 2. Real-time Mission Authorization Listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log(`[ABYSS HUD] Identity Event: ${event}`);
       if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') {
         if (session?.user) {
           setUser(session.user);
-          fetchProfileData(session.user.id);
+          await fetchProfileData(session.user.id);
+        } else {
+          // Sometimes INITIAL_SESSION fires with null session initially, don't set guest mode yet
+          if (event !== 'INITIAL_SESSION') {
+             setUser(null);
+             setProfile(null);
+             setLoading(false);
+          }
         }
       } else if (event === 'SIGNED_OUT') {
         console.warn("[ABYSS HUD] Session terminated. Returning to Guest mode.");

@@ -302,46 +302,86 @@ export default function SafetyHub() {
                </AnimatePresence>
             </div>
 
-            {/* Hyperbaric Locator */}
-            <div className="glass-card p-10 rounded-[3rem] border border-ocean-800 bg-ocean-1000 shadow-inner">
-               <div className="flex items-center justify-between mb-10">
-                  <h3 className="text-[10px] font-black text-ocean-500 uppercase tracking-[0.4em] flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-brand-teal" /> Medical Fleet Registry
-                  </h3>
-                  <div className="flex items-center gap-2">
-                     <div className="w-1.5 h-1.5 rounded-full bg-brand-teal animate-flicker" />
-                     <span className="text-[9px] text-ocean-700 font-black uppercase tracking-widest">Distance: KM</span>
-                  </div>
-               </div>
-               
-               <div className="space-y-4">
-                  {nearbyChambers.slice(0, 3).map((chamber) => (
-                    <div key={chamber.id} className="p-6 bg-ocean-950/30 rounded-2xl border border-ocean-900 group hover:border-brand-teal/40 transition-all cursor-crosshair">
-                       <div className="flex justify-between items-start">
-                          <div className="space-y-1">
-                             <p className="text-[10px] text-brand-teal font-black uppercase tracking-widest opacity-60">Node_{chamber.id.split('-')[0]}</p>
-                             <p className="text-xl font-black text-white leading-none tracking-tight group-hover:text-brand-teal transition-colors uppercase">{chamber.name}</p>
-                             <p className="text-[10px] text-ocean-500 font-bold uppercase tracking-widest pt-1">{chamber.address}</p>
-                          </div>
-                          <div className="text-right flex flex-col items-end gap-3">
-                             <div className="px-3 py-1 bg-ocean-900 rounded-lg text-xs font-black text-white border border-ocean-800">
-                                {Math.round(chamber.distance)}
-                             </div>
-                             <a 
-                               href={`tel:${chamber.phone_24h}`} 
-                               className="px-4 py-2 bg-ocean-900 border border-brand-cyan/20 rounded-lg text-[10px] text-brand-cyan font-black uppercase tracking-widest hover:bg-brand-cyan hover:text-deep-sea transition-all active:scale-95"
-                             >
-                               COMM_LINK
-                             </a>
-                          </div>
-                       </div>
-                    </div>
-                  ))}
-               </div>
-               <div className="mt-10 pt-8 border-t border-ocean-900/50 flex items-center justify-center opacity-30">
-                  <p className="text-[8px] font-black text-ocean-500 uppercase tracking-[0.5em]">End_of_Registry // 0xAF</p>
-               </div>
-            </div>
+             {/* Mission Intelligence Briefing */}
+             <div className="glass-card p-10 rounded-[3rem] border border-ocean-800 bg-gradient-to-br from-deep-sea to-ocean-1000 shadow-2xl relative overflow-hidden group">
+                <div className="absolute inset-0 bg-brand-cyan/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                <h3 className="text-[10px] font-black text-ocean-500 uppercase tracking-[0.4em] mb-10 flex items-center gap-2">
+                  <Navigation className="w-4 h-4 text-brand-cyan" /> Mission Briefing: Site Intel
+                </h3>
+                
+                <div className="space-y-6">
+                   <p className="text-[10px] text-ocean-400 font-bold uppercase tracking-widest leading-relaxed">
+                     Select a mission site to analyze environmental risk factors including exposure ratings and protection levels.
+                   </p>
+                   
+                   <div className="p-6 rounded-2xl bg-ocean-950/50 border border-ocean-900 border-dashed flex flex-col items-center justify-center text-center">
+                      <div className="w-12 h-12 rounded-xl bg-ocean-900 flex items-center justify-center mb-4 text-ocean-700">
+                         <Activity className="w-6 h-6" />
+                      </div>
+                      <p className="text-xs font-black text-ocean-600 uppercase tracking-widest mb-4">Awaiting Site Selection</p>
+                      <button 
+                        onClick={() => window.location.href='/explore'}
+                        className="px-6 py-2.5 bg-brand-cyan/10 border border-brand-cyan/20 rounded-xl text-[9px] font-black uppercase text-brand-cyan tracking-widest hover:bg-brand-cyan hover:text-deep-sea transition-all"
+                      >
+                        Launch_Discovery_Engine
+                      </button>
+                   </div>
+
+                   <div className="pt-6 border-t border-ocean-900 flex items-center gap-6">
+                      <div className="flex-1">
+                         <p className="text-[8px] font-black text-ocean-600 uppercase mb-2 tracking-widest">Global Security Index</p>
+                         <div className="h-1 w-full bg-ocean-900 rounded-full overflow-hidden">
+                            <div className="h-full w-[85%] bg-gradient-to-r from-brand-cyan to-brand-teal" />
+                         </div>
+                      </div>
+                      <div className="text-right">
+                         <p className="text-[8px] font-black text-ocean-600 uppercase mb-1 tracking-widest">Risk Level</p>
+                         <p className="text-xs font-black text-brand-teal uppercase">Minimal</p>
+                      </div>
+                   </div>
+                </div>
+             </div>
+
+             {/* Hyperbaric Locator */}
+             <div className="glass-card p-10 rounded-[3rem] border border-ocean-800 bg-ocean-1000 shadow-inner">
+                <div className="flex items-center justify-between mb-10">
+                   <h3 className="text-[10px] font-black text-ocean-500 uppercase tracking-[0.4em] flex items-center gap-2">
+                     <MapPin className="w-4 h-4 text-brand-teal" /> Medical Fleet Registry
+                   </h3>
+                   <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-brand-teal animate-flicker" />
+                      <span className="text-[9px] text-ocean-700 font-black uppercase tracking-widest">Distance: KM</span>
+                   </div>
+                </div>
+                
+                <div className="space-y-4">
+                   {nearbyChambers.slice(0, 3).map((chamber) => (
+                     <div key={chamber.id} className="p-6 bg-ocean-950/30 rounded-2xl border border-ocean-900 group hover:border-brand-teal/40 transition-all cursor-crosshair">
+                        <div className="flex justify-between items-start">
+                           <div className="space-y-1">
+                              <p className="text-[10px] text-brand-teal font-black uppercase tracking-widest opacity-60">Node_{chamber.id.split('-')[0]}</p>
+                              <p className="text-xl font-black text-white leading-none tracking-tight group-hover:text-brand-teal transition-colors uppercase">{chamber.name}</p>
+                              <p className="text-[10px] text-ocean-500 font-bold uppercase tracking-widest pt-1">{chamber.address}</p>
+                           </div>
+                           <div className="text-right flex flex-col items-end gap-3">
+                              <div className="px-3 py-1 bg-ocean-900 rounded-lg text-xs font-black text-white border border-ocean-800">
+                                 {Math.round(chamber.distance)}
+                              </div>
+                              <a 
+                                href={`tel:${chamber.phone_24h}`} 
+                                className="px-4 py-2 bg-ocean-900 border border-brand-cyan/20 rounded-lg text-[10px] text-brand-cyan font-black uppercase tracking-widest hover:bg-brand-cyan hover:text-deep-sea transition-all active:scale-95"
+                              >
+                                COMM_LINK
+                              </a>
+                           </div>
+                        </div>
+                     </div>
+                   ))}
+                </div>
+                <div className="mt-10 pt-8 border-t border-ocean-900/50 flex items-center justify-center opacity-30">
+                   <p className="text-[8px] font-black text-ocean-500 uppercase tracking-[0.5em]">End_of_Registry // 0xAF</p>
+                </div>
+             </div>
 
           </section>
 

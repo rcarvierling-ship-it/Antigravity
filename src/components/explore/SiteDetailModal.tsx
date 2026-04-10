@@ -159,6 +159,40 @@ export function SiteDetailModal({ site, onClose }: SiteDetailModalProps) {
                 </div>
               ) : null}
 
+              {/* Environmental Intelligence Expansion */}
+              <div className="mb-8 space-y-4">
+                <h3 className="text-[10px] font-bold text-ocean-400 uppercase tracking-widest mb-4 border-b border-ocean-800/30 pb-2">Environmental Intel</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="glass-card p-3 rounded-xl border-white/5 bg-ocean-1000/30">
+                    <p className="text-[8px] font-black text-ocean-500 uppercase tracking-widest mb-1 leading-none">Shore Access</p>
+                    <p className="text-xs font-bold text-white uppercase">{site.shore_access_type || "N/A"}</p>
+                  </div>
+                  <div className="glass-card p-3 rounded-xl border-white/5 bg-ocean-1000/30">
+                    <p className="text-[8px] font-black text-ocean-500 uppercase tracking-widest mb-1 leading-none">Reef Orientation</p>
+                    <p className="text-xs font-bold text-white uppercase">{site.reef_orientation || "None"}</p>
+                  </div>
+                  <div className="glass-card p-3 rounded-xl border-white/5 bg-ocean-1000/30">
+                    <p className="text-[8px] font-black text-ocean-500 uppercase tracking-widest mb-1 leading-none">Exposure</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <div className={cn("w-1.5 h-1.5 rounded-full shadow-[0_0_8px_white]", 
+                        site.site_exposure === 'protected' ? "bg-green-500" : 
+                        site.site_exposure === 'semi-protected' ? "bg-yellow-500" : "bg-red-500"
+                      )} />
+                      <p className="text-xs font-bold text-white capitalize">{site.site_exposure || "Exposed"}</p>
+                    </div>
+                  </div>
+                  <div className="glass-card p-3 rounded-xl border-white/5 bg-ocean-1000/30">
+                    <p className="text-[8px] font-black text-ocean-500 uppercase tracking-widest mb-1 leading-none">Protection Level</p>
+                    <p className={cn("text-xs font-bold uppercase", 
+                      site.protection_level === 'high' ? "text-brand-teal" : 
+                      site.protection_level === 'medium' ? "text-yellow-500" : "text-ocean-400"
+                    )}>
+                      {site.protection_level || "Low"} Strength
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <Link 
                 href={`/logbook/new?site_name=${encodeURIComponent(site.name)}`}
                 className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-cyan to-brand-teal text-deep-sea font-black text-center flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(0,229,255,0.4)] transition-all active:scale-95 shadow-lg mb-4"
