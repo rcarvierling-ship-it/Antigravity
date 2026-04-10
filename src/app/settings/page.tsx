@@ -125,6 +125,63 @@ export default function SettingsPage() {
             </div>
           </section>
 
+          {/* Biometric & Emergency Section */}
+          <section className="glass-card rounded-2xl p-8 border border-white/5 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-red-500/20" />
+            <h2 className="text-[10px] font-black text-ocean-500 uppercase tracking-[0.4em] mb-8">Bio_Safety_Override</h2>
+            
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-ocean-600 uppercase tracking-widest block ml-1">Emergency_Contact</label>
+                  <input 
+                    type="text"
+                    placeholder="NAME..."
+                    defaultValue={profile?.emergency_contact_name}
+                    onBlur={(e) => updatePreference("emergency_contact_name", e.target.value)}
+                    className="w-full bg-ocean-1000 border border-ocean-900 rounded-xl px-4 py-3 text-white text-xs font-bold focus:outline-none focus:border-red-500/50 transition-all uppercase placeholder:opacity-20"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-ocean-600 uppercase tracking-widest block ml-1">Kin_Relay</label>
+                  <input 
+                    type="text"
+                    placeholder="PHONE..."
+                    defaultValue={profile?.emergency_contact_phone}
+                    onBlur={(e) => updatePreference("emergency_contact_phone", e.target.value)}
+                    className="w-full bg-ocean-1000 border border-ocean-900 rounded-xl px-4 py-3 text-white text-xs font-bold focus:outline-none focus:border-red-500/50 transition-all uppercase placeholder:opacity-20"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-ocean-600 uppercase tracking-widest block ml-1">Blood_Group</label>
+                  <select 
+                    defaultValue={profile?.blood_type}
+                    onChange={(e) => updatePreference("blood_type", e.target.value)}
+                    className="w-full bg-ocean-1000 border border-ocean-900 rounded-xl px-4 py-3 text-white text-xs font-bold focus:outline-none focus:border-brand-teal/50 transition-all uppercase appearance-none"
+                  >
+                    <option value="">SCANNING...</option>
+                    {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-ocean-600 uppercase tracking-widest block ml-1">Medical_Dossier</label>
+                  <input 
+                    type="text"
+                    placeholder="ALLERGIES / NOTES..."
+                    defaultValue={profile?.medical_notes}
+                    onBlur={(e) => updatePreference("medical_notes", e.target.value)}
+                    className="w-full bg-ocean-1000 border border-ocean-900 rounded-xl px-4 py-3 text-white text-xs font-bold focus:outline-none focus:border-brand-teal/50 transition-all uppercase placeholder:opacity-20"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+
           {/* Support Section */}
           <section className="glass-card rounded-2xl p-8 border border-white/5 relative overflow-hidden">
              <div className="absolute top-0 left-0 w-1 h-full bg-brand-teal/20" />

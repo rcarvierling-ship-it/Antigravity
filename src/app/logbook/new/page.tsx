@@ -18,6 +18,7 @@ export default function NewDiveLog() {
   const [shops, setShops] = useState<any[]>([]);
   const [species, setSpecies] = useState<any[]>([]);
   const [selectedSpecies, setSelectedSpecies] = useState<string[]>([]);
+  const [profile, setProfile] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const startPressure = watch("startPressure");
@@ -27,11 +28,18 @@ export default function NewDiveLog() {
 
   useEffect(() => {
     async function fetchData() {
-      const { data: shopsData } = await supabase.from("dive_shops").select("*");
-      if (shopsData) setShops(shopsData);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      const { data: speciesData } = await supabase.from("marine_life_species").select("*");
-      if (speciesData) setSpecies(speciesData);
+      const [shopsRes, speciesRes, profileRes] = await Promise.all([
+        supabase.from("dive_shops").select("*"),
+        supabase.from("marine_life_species").select("*"),
+        supabase.from("profiles").select("*").eq("id", user.id).single()
+      ]);
+
+      if (shopsRes.data) setShops(shopsRes.data);
+      if (speciesRes.data) setSpecies(speciesRes.data);
+      if (profileRes.data) setProfile(profileRes.data);
     }
     fetchData();
   }, [supabase]);
@@ -47,13 +55,15 @@ export default function NewDiveLog() {
     
     if (!user) return;
 
+    const isImperial = profile?.unit_system === "imperial";
+
     const sac = calculateSAC({
       startPressure: Number(data.startPressure),
       endPressure: Number(data.endPressure),
       tankSize: Number(data.tankVolume),
       avgDepthM: Number(data.avgDepth),
       bottomTime: Number(data.duration),
-      isImperial: true // Default for now, can be toggled by user preference
+      isImperial: isImperial
     });
 
     // 1. Insert Dive Log
@@ -111,8 +121,11 @@ export default function NewDiveLog() {
   };
 
   return (
-    <main className="w-full min-h-screen px-4 md:px-8 py-8 pt-24 md:pt-12 pb-24">
-      <div className="max-w-3xl mx-auto">
+    <main className="w-full min-h-screen px-4 md:px-8 py-8 pt-24 md:pt-12 pb-24 bg-deep-sea relative overflow-hidden">
+      {/* HUD Background Grid */}
+      <div className="absolute inset-0 hud-grid opacity-10 pointer-events-none z-0" />
+      
+      <div className="max-w-3xl mx-auto relative z-10 scan-line">
         <Link href="/logbook" className="flex items-center gap-2 text-ocean-300 hover:text-white transition-colors mb-6 text-sm font-medium">
           <ArrowLeft className="w-4 h-4" /> Back to Logbook
         </Link>
@@ -209,7 +222,7 @@ export default function NewDiveLog() {
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-ocean-200 mb-2">Max Depth (m)</label>
+                <label className="block text-sm font-medium text-ocean-200 mb-2">Max Depth ({profile?.unit_system === 'imperial' ? 'ft' : 'm'})</label>
                 <input 
                   type="number"
                   {...register("maxDepth")}
@@ -217,7 +230,7 @@ export default function NewDiveLog() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ocean-200 mb-2">Avg Depth (m)</label>
+                <label className="block text-sm font-medium text-ocean-200 mb-2">Avg Depth ({profile?.unit_system === 'imperial' ? 'ft' : 'm'})</label>
                 <input 
                   type="number"
                   {...register("avgDepth")}
@@ -236,16 +249,16 @@ export default function NewDiveLog() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-ocean-200 mb-2">Tank (cuft)</label>
+                <label className="block text-sm font-medium text-ocean-200 mb-2">Tank (Vol)</label>
                 <input 
                   type="number"
                   {...register("tankVolume")}
-                  defaultValue="80"
+                  defaultValue={profile?.unit_system === 'imperial' ? "80" : "11"}
                   className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ocean-200 mb-2">Start PSI / BAR</label>
+                <label className="block text-sm font-medium text-ocean-200 mb-2">Start {profile?.unit_system === 'imperial' ? 'PSI' : 'BAR'}</label>
                 <input 
                   type="number"
                   {...register("startPressure")}
@@ -253,7 +266,7 @@ export default function NewDiveLog() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ocean-200 mb-2">End PSI / BAR</label>
+                <label className="block text-sm font-medium text-ocean-200 mb-2">End {profile?.unit_system === 'imperial' ? 'PSI' : 'BAR'}</label>
                 <input 
                   type="number"
                   {...register("endPressure")}
@@ -273,13 +286,13 @@ export default function NewDiveLog() {
                     {calculateSAC({
                       startPressure: Number(startPressure),
                       endPressure: Number(endPressure),
-                      tankSize: Number(watch("tankVolume") || 80),
+                      tankSize: Number(watch("tankVolume") || (profile?.unit_system === 'imperial' ? 80 : 11)),
                       avgDepthM: Number(depth),
                       bottomTime: Number(duration),
-                      isImperial: true
+                      isImperial: profile?.unit_system === 'imperial'
                     })}
                   </div>
-                  <span className="text-[10px] text-ocean-400 font-bold uppercase tracking-widest">SAC Rate (L/min)</span>
+                  <span className="text-[10px] text-ocean-400 font-bold uppercase tracking-widest">SAC Rate ({profile?.unit_system === 'imperial' ? 'cuft/min' : 'L/min'})</span>
                 </div>
               </div>
             )}
@@ -318,7 +331,7 @@ export default function NewDiveLog() {
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div>
-                <label className="block text-sm font-medium text-ocean-200 mb-2">Temp (°C)</label>
+                <label className="block text-sm font-medium text-ocean-200 mb-2">Temp ({profile?.unit_system === 'imperial' ? '°F' : '°C'})</label>
                 <input 
                   type="number"
                   {...register("temp")}
@@ -326,7 +339,7 @@ export default function NewDiveLog() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ocean-200 mb-2">Visibility (m)</label>
+                <label className="block text-sm font-medium text-ocean-200 mb-2">Visibility ({profile?.unit_system === 'imperial' ? 'ft' : 'm'})</label>
                 <input 
                   type="number"
                   {...register("visibility")}

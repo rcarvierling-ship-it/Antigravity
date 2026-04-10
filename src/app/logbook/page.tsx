@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Search, Filter, Anchor, MapPin, Calendar, Clock, Fish } from "lucide-react";
+import { Plus, Search, Filter, Anchor, MapPin, Calendar, Clock, Fish, Activity } from "lucide-react";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { cToF, mToFt } from "@/lib/conversions";
@@ -11,22 +11,28 @@ export default function LogbookPage() {
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ totalDives: 0, totalTime: 0 });
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     async function fetchLogs() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data } = await supabase
-          .from("dive_logs")
-          .select("*, dive_sites(name, country)")
-          .eq("user_id", user.id)
-          .order("date", { ascending: false });
+        const [logsRes, profileRes] = await Promise.all([
+          supabase
+            .from("dive_logs")
+            .select("*, dive_sites(name, country)")
+            .eq("user_id", user.id)
+            .order("date", { ascending: false }),
+          supabase.from("profiles").select("*").eq("id", user.id).single()
+        ]);
 
-        if (data) {
-          setLogs(data);
-          const totalTime = data.reduce((acc, log) => acc + (log.bottom_time_min || 0), 0);
-          setStats({ totalDives: data.length, totalTime });
+        if (profileRes.data) setProfile(profileRes.data);
+        
+        if (logsRes.data) {
+          setLogs(logsRes.data);
+          const totalTime = logsRes.data.reduce((acc, log) => acc + (log.bottom_time_min || 0), 0);
+          setStats({ totalDives: logsRes.data.length, totalTime });
         }
       }
       setLoading(false);
@@ -111,15 +117,17 @@ export default function LogbookPage() {
                 <div className="flex items-center gap-12 md:text-right">
                   <div className="flex flex-col">
                     <span className="text-[8px] font-black text-ocean-500 uppercase tracking-widest mb-1">Max Depth</span>
-                    <span className="text-lg font-black text-brand-cyan text-glow-cyan leading-none uppercase">{mToFt(log.max_depth_m)} FT</span>
+                    <span className="text-lg font-black text-brand-cyan text-glow-cyan leading-none uppercase">
+                      {profile?.unit_system === 'imperial' ? mToFt(log.max_depth_m) : log.max_depth_m} {profile?.unit_system === 'imperial' ? 'FT' : 'M'}
+                    </span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[8px] font-black text-ocean-500 uppercase tracking-widest mb-1">Duration</span>
                     <span className="text-lg font-black text-white leading-none uppercase">{log.bottom_time_min} MIN</span>
                   </div>
                   <div className="hidden lg:flex flex-col">
-                    <span className="text-[8px] font-black text-ocean-500 uppercase tracking-widest mb-1">Gas Mix</span>
-                    <span className="text-lg font-black text-brand-teal leading-none uppercase">{log.gas_mix || "AIR"}</span>
+                    <span className="text-[8px] font-black text-ocean-500 uppercase tracking-widest mb-1">SAC Rate</span>
+                    <span className="text-lg font-black text-brand-teal leading-none uppercase">{log.computed_sac || "N/A"}</span>
                   </div>
                 </div>
               </div>

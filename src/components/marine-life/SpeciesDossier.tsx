@@ -136,21 +136,29 @@ export function SpeciesDossier({ species, sighting, onClose }: SpeciesDossierPro
               {/* Status & Stats */}
               <div className="pt-4 flex items-center justify-between">
                 <div className="flex flex-col">
-                  <span className="text-[9px] text-ocean-600 font-black uppercase">Conservation Status</span>
-                  <span className={cn(
-                    "text-xs font-bold uppercase tracking-widest",
-                    species.conservation_status?.includes('Endangered') ? "text-red-400" : "text-brand-teal"
-                  )}>
-                    {species.conservation_status || 'Data Deficient'}
-                  </span>
+                  <span className="text-[9px] text-ocean-600 font-black uppercase tracking-widest mb-1">Conservation_Status</span>
+                  <div className="flex items-center gap-2">
+                    <div className={cn(
+                      "w-2 h-2 rounded-full animate-flicker",
+                      species.conservation_status?.includes('Endangered') ? "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]" : 
+                      species.conservation_status?.includes('Vulnerable') ? "bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]" : "bg-brand-teal shadow-[0_0_10px_rgba(45,212,191,0.5)]"
+                    )} />
+                    <span className={cn(
+                      "text-xs font-black uppercase tracking-[0.2em]",
+                      species.conservation_status?.includes('Endangered') ? "text-red-400" : 
+                      species.conservation_status?.includes('Vulnerable') ? "text-orange-400" : "text-brand-teal"
+                    )}>
+                      {species.conservation_status || 'Data_Deficient'}
+                    </span>
+                  </div>
                 </div>
                 
-                <div className="flex items-center gap-2">
-                   <button className="p-3 bg-ocean-900 hover:bg-ocean-800 border border-ocean-800 rounded-xl transition-all group">
-                      <Heart className="w-4 h-4 text-ocean-500 group-hover:text-red-500" />
+                <div className="flex items-center gap-3">
+                   <button className="p-4 bg-ocean-1000 hover:bg-red-500/10 border border-ocean-800 rounded-2xl transition-all group active:scale-95 shadow-inner">
+                      <Heart className="w-5 h-5 text-ocean-700 group-hover:text-red-500 transition-colors" />
                    </button>
-                   <button className="p-3 bg-ocean-900 hover:bg-brand-cyan border border-ocean-800 rounded-xl transition-all group">
-                      <Share2 className="w-4 h-4 text-ocean-500 group-hover:text-deep-sea" />
+                   <button className="p-4 bg-brand-cyan text-deep-sea border border-brand-cyan/20 rounded-2xl transition-all group active:scale-95 shadow-lg shadow-brand-cyan/20 hover:shadow-brand-cyan/40">
+                      <Share2 className="w-5 h-5" />
                    </button>
                 </div>
               </div>

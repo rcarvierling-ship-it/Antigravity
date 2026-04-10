@@ -80,24 +80,50 @@ export default function SafetyHub() {
 
   return (
     <main className={cn(
-      "w-full min-h-screen pt-24 pb-32 px-4 md:px-8 transition-colors duration-700",
+      "w-full min-h-screen pt-24 pb-32 px-4 md:px-8 transition-colors duration-700 relative overflow-hidden",
       activeMode === 'red' ? "bg-red-950" : "bg-deep-sea"
     )}>
-      <div className="max-w-4xl mx-auto">
+      {/* HUD Background Grid */}
+      <div className={cn(
+        "absolute inset-0 hud-grid pointer-events-none z-0 transition-opacity duration-700",
+        activeMode === 'red' ? "opacity-20 translate-y-1" : "opacity-10"
+      )} />
+      
+      <div className={cn(
+        "max-w-4xl mx-auto relative z-10 scan-line",
+        activeMode === 'red' && "animate-pulse"
+      )}>
         
+        {/* Module Header */}
+        <div className="flex flex-col items-center text-center mb-16 px-2">
+          <div className="flex items-center gap-2 mb-2">
+            <ShieldAlert className={cn("w-4 h-4", activeMode === 'red' ? "text-white" : "text-brand-cyan")} />
+            <span className={cn("text-[10px] font-black uppercase tracking-[0.5em]", activeMode === 'red' ? "text-white" : "text-brand-cyan")}>
+              {activeMode === 'red' ? "Emergency Link Active" : "Guardian Protocol // 0xS-1"}
+            </span>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black text-white leading-none tracking-tighter uppercase mb-6">
+            Safety <span className={activeMode === 'red' ? "text-white" : "text-brand-cyan"}>Intelligence</span>
+          </h1>
+          <p className="text-ocean-500 max-w-lg font-black uppercase text-[10px] tracking-widest leading-relaxed">
+            Technical diver response & physiological monitoring hub. 
+            Telemetry status: <span className={activeMode === 'red' ? "text-white" : "text-brand-teal"}>Secure</span>
+          </p>
+        </div>
+
         {/* Mode Toggle */}
-        <div className="flex justify-center mb-12">
+        <div className="flex justify-center mb-16">
            <button 
              onClick={() => setActiveMode(activeMode === 'standard' ? 'red' : 'standard')}
              className={cn(
-               "px-8 py-3 rounded-full font-black uppercase tracking-widest text-[11px] border transition-all flex items-center gap-3",
+               "px-10 py-4 rounded-full font-black uppercase tracking-widest text-[11px] border transition-all flex items-center gap-4 group",
                activeMode === 'standard' 
-                ? "bg-red-600/10 border-red-600/30 text-red-500 hover:bg-red-600 hover:text-white" 
-                : "bg-white text-red-900 border-white shadow-[0_0_50px_rgba(255,255,255,0.3)] animate-pulse"
+                ? "bg-red-600/10 border-red-600/30 text-red-500 hover:bg-red-600 hover:text-white hover:shadow-[0_0_30px_rgba(239,68,68,0.3)]" 
+                : "bg-white text-red-900 border-white shadow-[0_0_60px_rgba(255,255,255,0.4)]"
              )}
            >
-             <AlertTriangle className="w-4 h-4" />
-             {activeMode === 'standard' ? "Activate SOS Mode" : "Deactivate Emergency Link"}
+             <AlertTriangle className={cn("w-5 h-5", activeMode === 'standard' ? "group-hover:animate-bounce" : "animate-pulse")} />
+             {activeMode === 'standard' ? "Activate SOS Protocol" : "DEACTIVATE EMERGENCY BEACON"}
            </button>
         </div>
 
@@ -106,59 +132,87 @@ export default function SafetyHub() {
           {/* Section 1: Distress Beacon */}
           <section className="space-y-6">
             <div className={cn(
-              "glass-card p-8 rounded-[2.5rem] border transition-all duration-700 flex flex-col items-center text-center",
-              activeMode === 'red' ? "border-red-500 bg-red-900/40 shadow-[0_0_40px_rgba(239,68,68,0.2)]" : "border-ocean-800"
+              "glass-card p-10 rounded-[3rem] border transition-all duration-700 flex flex-col items-center text-center relative overflow-hidden",
+              activeMode === 'red' ? "border-red-500 bg-red-900/40 shadow-[0_0_50px_rgba(239,68,68,0.2)]" : "border-ocean-800"
             )}>
+               {/* SOS Pulse Effect */}
+               {activeMode === 'red' && (
+                 <div className="absolute inset-0 bg-red-500/10 animate-pulse pointer-events-none" />
+               )}
+
                <div className={cn(
-                 "w-16 h-16 rounded-full flex items-center justify-center mb-6",
-                 activeMode === 'red' ? "bg-white text-red-600 animate-bounce" : "bg-ocean-900 text-brand-cyan"
+                 "w-20 h-20 rounded-2xl flex items-center justify-center mb-8 rotate-3 shadow-2xl transition-all duration-700",
+                 activeMode === 'red' ? "bg-white text-red-600 scale-110" : "bg-ocean-1000 text-brand-cyan border border-ocean-800"
                )}>
-                 <Navigation className="w-8 h-8" />
+                 <Navigation className="w-10 h-10" />
                </div>
-               <h2 className={cn("text-xl font-black uppercase tracking-widest mb-2", activeMode === 'red' ? "text-white" : "text-ocean-300")}>GPS Distress Beacon</h2>
-               <p className="text-sm font-medium text-ocean-500 mb-8 lowercase">Current coordinate telemetry for radio relay</p>
+               <h2 className={cn("text-2xl font-black uppercase tracking-tighter mb-2", activeMode === 'red' ? "text-white" : "text-white")}>Live Coordinates</h2>
+               <p className="text-[10px] font-black text-ocean-500 mb-10 uppercase tracking-widest">Global Relay Intelligence</p>
                
                <div className="space-y-4 w-full">
                   <div className={cn(
-                    "p-6 rounded-2xl font-mono text-2xl font-black flex flex-col gap-2 transition-all",
-                    activeMode === 'red' ? "bg-white text-red-950" : "bg-ocean-950 text-brand-cyan"
+                    "p-8 rounded-3xl font-mono text-3xl font-black flex flex-col gap-4 transition-all border",
+                    activeMode === 'red' ? "bg-white text-red-950 border-white" : "bg-ocean-1000 text-brand-cyan border-ocean-900 shadow-inner"
                   )}>
-                    <div>{coords?.lat.toFixed(6) || "---.------"} N</div>
-                    <div className="border-t border-current/10 pt-2">{coords?.lng.toFixed(6) || "---.------"} W</div>
+                    <div className="flex justify-between items-center px-2">
+                       <span className="text-[10px] opacity-40 uppercase tracking-widest">Lat</span>
+                       <span>{coords?.lat.toFixed(6) || "---.------"}</span>
+                    </div>
+                    <div className="border-t border-current/10 pt-4 flex justify-between items-center px-2">
+                       <span className="text-[10px] opacity-40 uppercase tracking-widest">Lng</span>
+                       <span>{coords?.lng.toFixed(6) || "---.------"}</span>
+                    </div>
                   </div>
                   <button 
                     onClick={() => navigator.clipboard.writeText(`${coords?.lat}, ${coords?.lng}`)}
-                    className="w-full py-3 rounded-xl bg-ocean-900/50 text-[10px] font-black uppercase tracking-widest text-ocean-400 hover:text-white transition-all"
+                    className="w-full py-4 rounded-2xl bg-ocean-1000 border border-ocean-800 text-[10px] font-black uppercase tracking-widest text-ocean-400 hover:text-white hover:border-ocean-700 transition-all active:scale-95"
                   >
-                    Copy Coordinates
+                    COPY_TELEMETRY_STRING
                   </button>
                </div>
             </div>
 
-            {/* Emergency Contacts */}
-            <div className="glass-card p-8 rounded-[2.5rem] border border-ocean-800">
-               <h3 className="text-[10px] font-black text-ocean-500 uppercase tracking-widest mb-6 flex items-center gap-2">
-                 <ShieldAlert className="w-3 h-3 text-red-500" /> Ground Ops Contact
+            {/* Emergency Contacts & Bio-Data */}
+            <div className="glass-card p-10 rounded-[3rem] border border-ocean-800 bg-gradient-to-br from-ocean-1000 to-deep-sea">
+               <h3 className="text-[10px] font-black text-ocean-500 uppercase tracking-[0.4em] mb-8 flex items-center gap-2">
+                 <ShieldAlert className="w-3 h-3 text-red-500" /> Bio-Metric Support
                </h3>
-               {profile?.emergency_contact_phone ? (
-                 <div className="flex items-center justify-between">
-                    <div>
-                       <p className="text-lg font-black text-white">{profile.emergency_contact_name}</p>
-                       <p className="text-xs text-ocean-400 font-bold tracking-widest uppercase">{profile.emergency_contact_phone}</p>
+               
+               <div className="space-y-6">
+                 {/* Emergency Contact */}
+                 {profile?.emergency_contact_phone ? (
+                   <div className="flex items-center justify-between p-6 bg-ocean-950/50 rounded-2xl border border-ocean-900">
+                      <div>
+                         <p className="text-[10px] text-ocean-600 font-black uppercase tracking-widest mb-1">Primary Kin</p>
+                         <p className="text-xl font-black text-white leading-none mb-1">{profile.emergency_contact_name}</p>
+                         <p className="text-xs text-brand-teal font-black tracking-widest uppercase">{profile.emergency_contact_phone}</p>
+                      </div>
+                      <a 
+                        href={`tel:${profile.emergency_contact_phone}`}
+                        className="p-5 bg-brand-teal text-deep-sea rounded-2xl hover:scale-110 hover:shadow-[0_0_30px_rgba(45,212,191,0.3)] transition-all"
+                      >
+                        <PhoneCall className="w-6 h-6" />
+                      </a>
+                   </div>
+                 ) : (
+                   <div className="text-center py-6 bg-ocean-950/40 rounded-2xl border border-dashed border-ocean-800 group hover:border-ocean-700 transition-all cursor-pointer">
+                      <p className="text-[10px] text-ocean-600 font-black uppercase tracking-widest">No Kinetic Contact Synchronized</p>
+                      <button className="text-[9px] text-brand-cyan font-black uppercase mt-3 tracking-widest hover:underline">Link_Identity_Node</button>
+                   </div>
+                 )}
+
+                 {/* Medical Notes */}
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="p-6 bg-ocean-950/50 rounded-2xl border border-ocean-900">
+                       <p className="text-[9px] text-ocean-600 font-black uppercase tracking-widest mb-2">Blood_Group</p>
+                       <p className="text-2xl font-black text-white leading-none">{profile?.blood_type || "N/A"}</p>
                     </div>
-                    <a 
-                      href={`tel:${profile.emergency_contact_phone}`}
-                      className="p-4 bg-brand-teal text-deep-sea rounded-2xl hover:scale-105 transition-all"
-                    >
-                      <PhoneCall className="w-5 h-5" />
-                    </a>
+                    <div className="p-6 bg-ocean-950/50 rounded-2xl border border-ocean-900">
+                       <p className="text-[9px] text-ocean-600 font-black uppercase tracking-widest mb-2">Risk_Markers</p>
+                       <p className="text-xs font-black text-white leading-relaxed truncate">{profile?.medical_notes || "Clean Record"}</p>
+                    </div>
                  </div>
-               ) : (
-                 <div className="text-center py-4 bg-ocean-950/40 rounded-2xl border border-dashed border-ocean-800">
-                    <p className="text-[10px] text-ocean-600 font-black uppercase">No Contact Logged</p>
-                    <button className="text-[9px] text-brand-cyan font-black uppercase mt-2">Update Mission Profile</button>
-                 </div>
-               )}
+               </div>
             </div>
           </section>
 
@@ -166,9 +220,12 @@ export default function SafetyHub() {
           <section className="space-y-8">
             
             {/* DCS Symptom Checker */}
-            <div className="glass-card p-8 rounded-[2.5rem] border border-ocean-800 bg-gradient-to-br from-ocean-950/50 to-transparent overflow-hidden relative">
-               <h3 className="text-sm font-black text-white uppercase tracking-widest mb-8 flex items-center gap-2">
-                 <Stethoscope className="w-4 h-4 text-brand-cyan" /> Post-Dive Diagnostic
+            <div className="glass-card p-10 rounded-[3rem] border border-ocean-800 bg-gradient-to-br from-ocean-1000 to-transparent overflow-hidden relative">
+               {/* Technical Decor */}
+               <div className="absolute top-0 right-0 w-32 h-32 bg-brand-cyan/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2" />
+               
+               <h3 className="text-[10px] font-black text-ocean-500 uppercase tracking-[0.4em] mb-10 flex items-center gap-2">
+                 <Stethoscope className="w-4 h-4 text-brand-cyan" /> Bio-Scan Post-Mission
                </h3>
                
                <AnimatePresence mode="wait">
@@ -178,50 +235,66 @@ export default function SafetyHub() {
                      initial={{ opacity: 0, x: 20 }}
                      animate={{ opacity: 1, x: 0 }}
                      exit={{ opacity: 0, x: -20 }}
-                     className="space-y-6"
+                     className="space-y-8"
                    >
-                     <p className="text-lg font-bold text-white leading-tight">{symptomQuestions[symptomStep].q}</p>
-                     <div className="flex gap-3">
+                     <div className="space-y-2">
+                        <span className="text-[9px] font-black text-brand-cyan uppercase tracking-widest">Diagnostic Step 0{symptomStep + 1}</span>
+                        <p className="text-2xl font-black text-white leading-tight tracking-tighter uppercase">{symptomQuestions[symptomStep].q}</p>
+                     </div>
+                     <div className="flex gap-4">
                         <button 
                           onClick={() => setSymptomStep(symptomStep + 1)}
-                          className="flex-1 py-4 bg-ocean-900 rounded-2xl text-[10px] font-black uppercase tracking-widest text-ocean-400 hover:bg-ocean-800"
+                          className="flex-1 py-5 bg-ocean-950 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-ocean-500 hover:bg-ocean-900 border border-ocean-900 transition-all active:scale-95"
                         >
-                          No
+                          Negative
                         </button>
                         <button 
                           onClick={() => {
                             setSymptoms([...symptoms, symptomQuestions[symptomStep].id]);
                             setSymptomStep(symptomStep + 1);
                           }}
-                          className="flex-1 py-4 bg-red-600 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-red-900/20"
+                          className="flex-1 py-5 bg-red-600 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-white shadow-xl shadow-red-900/30 hover:bg-red-500 transition-all active:scale-95"
                         >
-                          Yes
+                          Affirmative
                         </button>
                      </div>
                    </motion.div>
                  ) : (
                    <motion.div 
-                     initial={{ opacity: 0 }}
-                     animate={{ opacity: 1 }}
-                     className="text-center py-4"
+                     initial={{ opacity: 0, scale: 0.9 }}
+                     animate={{ opacity: 1, scale: 1 }}
+                     className="text-center py-6"
                    >
                      {symptoms.length > 0 ? (
-                       <div className="space-y-4">
-                          <div className="w-12 h-12 rounded-full bg-red-500/20 border border-red-500 flex items-center justify-center mx-auto">
-                             <AlertTriangle className="w-6 h-6 text-red-500" />
+                       <div className="space-y-6">
+                          <div className="w-20 h-20 rounded-3xl bg-red-600/20 border border-red-500 flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+                             <AlertTriangle className="w-10 h-10 text-red-500" />
                           </div>
-                          <h4 className="text-xl font-black text-white">IMMEDIATE ATTENTION</h4>
-                          <p className="text-xs text-ocean-400 font-medium">Potential DCS detected. Administer 100% Oxygen and contact DAN immediately.</p>
-                          <button onClick={() => setSymptomStep(0)} className="text-[10px] font-black uppercase text-brand-cyan tracking-widest mt-4">Restart Scan</button>
+                          <div className="space-y-2">
+                             <h4 className="text-3xl font-black text-white tracking-tighter uppercase">Evacuation Warning</h4>
+                             <p className="text-[10px] text-red-200/60 font-black uppercase tracking-widest leading-relaxed">
+                               Potential Decompression Sickness detected. <br />
+                               1. Administer 100% Oxygen immediately. <br />
+                               2. Contact emergency hotline (DAN). <br />
+                               3. Neutral postural position required.
+                             </p>
+                          </div>
+                          <button onClick={() => setSymptomStep(0)} className="px-8 py-3 bg-red-500/10 border border-red-500/30 rounded-xl text-[10px] font-black uppercase text-red-500 tracking-[0.3em] hover:bg-red-500 hover:text-white transition-all">Restart Diagnostic</button>
                        </div>
                      ) : (
-                       <div className="space-y-4">
-                          <div className="w-12 h-12 rounded-full bg-brand-teal/20 border border-brand-teal flex items-center justify-center mx-auto text-brand-teal">
-                             <CheckCircle2 className="w-6 h-6" />
+                       <div className="space-y-6">
+                          <div className="w-20 h-20 rounded-3xl bg-brand-teal/20 border border-brand-teal flex items-center justify-center mx-auto text-brand-teal shadow-[0_0_30px_rgba(45,212,191,0.2)]">
+                             <CheckCircle2 className="w-10 h-10" />
                           </div>
-                          <h4 className="text-xl font-black text-white">ALL CLEAR</h4>
-                          <p className="text-xs text-ocean-400 font-medium">No immediate high-risk indicators detected. Continue monitoring and stay hydrated.</p>
-                          <button onClick={() => setSymptomStep(0)} className="text-[10px] font-black uppercase text-brand-cyan tracking-widest mt-4">Restart Scan</button>
+                          <div className="space-y-2">
+                             <h4 className="text-3xl font-black text-white tracking-tighter uppercase">Scan Nominal</h4>
+                             <p className="text-[10px] text-ocean-400 font-black uppercase tracking-widest leading-relaxed">
+                               No immediate high-risk indicators detected. <br />
+                               Maintain hydration and monitor for 24h. <br />
+                               Telemetry reset to stand-by mode.
+                             </p>
+                          </div>
+                          <button onClick={() => setSymptomStep(0)} className="px-8 py-3 bg-brand-cyan/10 border border-brand-cyan/30 rounded-xl text-[10px] font-black uppercase text-brand-cyan tracking-[0.3em] hover:bg-brand-cyan hover:text-deep-sea transition-all">New Profile Scan</button>
                        </div>
                      )}
                    </motion.div>
@@ -230,27 +303,43 @@ export default function SafetyHub() {
             </div>
 
             {/* Hyperbaric Locator */}
-            <div className="glass-card p-8 rounded-[2.5rem] border border-ocean-800">
-               <div className="flex items-center justify-between mb-8">
-                  <h3 className="text-[10px] font-black text-ocean-500 uppercase tracking-widest flex items-center gap-2">
-                    <MapPin className="w-3 h-3 text-brand-teal" /> Medical Facilities Nearby
+            <div className="glass-card p-10 rounded-[3rem] border border-ocean-800 bg-ocean-1000 shadow-inner">
+               <div className="flex items-center justify-between mb-10">
+                  <h3 className="text-[10px] font-black text-ocean-500 uppercase tracking-[0.4em] flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-brand-teal" /> Medical Fleet Registry
                   </h3>
-                  <span className="text-[8px] bg-ocean-900 px-2 py-0.5 rounded-full text-ocean-500 font-black uppercase">KM</span>
+                  <div className="flex items-center gap-2">
+                     <div className="w-1.5 h-1.5 rounded-full bg-brand-teal animate-flicker" />
+                     <span className="text-[9px] text-ocean-700 font-black uppercase tracking-widest">Distance: KM</span>
+                  </div>
                </div>
                
-               <div className="space-y-3">
+               <div className="space-y-4">
                   {nearbyChambers.slice(0, 3).map((chamber) => (
-                    <div key={chamber.id} className="p-4 bg-ocean-950/50 rounded-2xl border border-ocean-800/50 flex items-center justify-between group hover:border-brand-teal/30 transition-all">
-                       <div>
-                          <p className="text-sm font-bold text-white group-hover:text-brand-teal transition-colors">{chamber.name}</p>
-                          <p className="text-[10px] text-ocean-500 font-bold uppercase tracking-widest mt-0.5">{chamber.address}</p>
-                       </div>
-                       <div className="text-right">
-                          <p className="text-xs font-black text-white">{Math.round(chamber.distance)}</p>
-                          <a href={`tel:${chamber.phone_24h}`} className="text-[9px] text-brand-cyan font-black uppercase tracking-widest mt-1 hover:underline inline-block">Call</a>
+                    <div key={chamber.id} className="p-6 bg-ocean-950/30 rounded-2xl border border-ocean-900 group hover:border-brand-teal/40 transition-all cursor-crosshair">
+                       <div className="flex justify-between items-start">
+                          <div className="space-y-1">
+                             <p className="text-[10px] text-brand-teal font-black uppercase tracking-widest opacity-60">Node_{chamber.id.split('-')[0]}</p>
+                             <p className="text-xl font-black text-white leading-none tracking-tight group-hover:text-brand-teal transition-colors uppercase">{chamber.name}</p>
+                             <p className="text-[10px] text-ocean-500 font-bold uppercase tracking-widest pt-1">{chamber.address}</p>
+                          </div>
+                          <div className="text-right flex flex-col items-end gap-3">
+                             <div className="px-3 py-1 bg-ocean-900 rounded-lg text-xs font-black text-white border border-ocean-800">
+                                {Math.round(chamber.distance)}
+                             </div>
+                             <a 
+                               href={`tel:${chamber.phone_24h}`} 
+                               className="px-4 py-2 bg-ocean-900 border border-brand-cyan/20 rounded-lg text-[10px] text-brand-cyan font-black uppercase tracking-widest hover:bg-brand-cyan hover:text-deep-sea transition-all active:scale-95"
+                             >
+                               COMM_LINK
+                             </a>
+                          </div>
                        </div>
                     </div>
                   ))}
+               </div>
+               <div className="mt-10 pt-8 border-t border-ocean-900/50 flex items-center justify-center opacity-30">
+                  <p className="text-[8px] font-black text-ocean-500 uppercase tracking-[0.5em]">End_of_Registry // 0xAF</p>
                </div>
             </div>
 

@@ -153,28 +153,27 @@ insert into public.dive_shops (name, location, website, rating) values
 ('Oceanic Society', 'Belize City, Belize', 'https://oceanicsociety.org', 4.5);
 
 -- 4. Populate Marine Life Catalog
-insert into public.marine_life_species (name, scientific_name, category, rarity, image_url) values
-('Whale Shark', 'Rhincodon typus', 'Sharks', 'Legendary', 'https://images.unsplash.com/photo-1560275619-4662e36fa65c'),
-('Great White Shark', 'Carcharodon carcharias', 'Sharks', 'Rare', 'https://images.unsplash.com/photo-1564349683136-77e0891d0b06'),
-('Manta Ray', 'Mobula alfredi', 'Rays', 'Legendary', 'https://images.unsplash.com/photo-1544551763-8dd44758c2dd'),
-('Green Sea Turtle', 'Chelonia mydas', 'Turtles', 'Common', 'https://images.unsplash.com/photo-1544551763-47a0159291f2'),
-('Lionfish', 'Pterois volitans', 'Fish', 'Common', 'https://images.unsplash.com/photo-1534043464124-3be32fe000c9'),
-('Clownfish', 'Amphiprioninae', 'Fish', 'Common', 'https://images.unsplash.com/photo-1524704659698-1f6305c29631'),
-('Spanish Dancer', 'Hexabranchus sanguineus', 'Nudibranchs', 'Uncommon', 'https://images.unsplash.com/photo-1516683018243-cd6d61f7f074');
+insert into public.marine_life_species (name, scientific_name, category, rarity, image_url, description, habitat_notes, conservation_status) values
+('Whale Shark', 'Rhincodon typus', 'Sharks', 'Legendary', 'https://images.unsplash.com/photo-1560275619-4662e36fa65c', 'The largest known fish species, these gentle giants are filter feeders found in open waters of the tropical oceans.', 'Pelagic/Open Ocean. Often found near reefs during seasonal plankton blooms.', 'Endangered'),
+('Great White Shark', 'Carcharodon carcharias', 'Sharks', 'Rare', 'https://images.unsplash.com/photo-1564349683136-77e0891d0b06', 'A large lamniform shark found in the coastal surface waters of all the major oceans.', 'Coastal waters, often near seal colonies.', 'Vulnerable'),
+('Manta Ray', 'Mobula alfredi', 'Rays', 'Legendary', 'https://images.unsplash.com/photo-1544551763-8dd44758c2dd', 'Majestic filter-feeding rays known for their large triangular pectoral fins.', 'Reef slopes and cleaning stations in tropical waters.', 'Vulnerable'),
+('Green Sea Turtle', 'Chelonia mydas', 'Turtles', 'Common', 'https://images.unsplash.com/photo-1544551763-47a0159291f2', 'A large sea turtle belonging to the family Cheloniidae.', 'Shallow coastal waters with abundant sea grass.', 'Endangered'),
+('Lionfish', 'Pterois volitans', 'Fish', 'Common', 'https://images.unsplash.com/photo-1534043464124-3be32fe000c9', 'Venomous marine fish known for their red, white, creamy, or black bands.', 'Coral reefs and shipwrecks.', 'Least Concern'),
+('Clownfish', 'Amphiprioninae', 'Fish', 'Common', 'https://images.unsplash.com/photo-1524704659698-1f6305c29631', 'Anemonefish known for their symbiotic relationship with anemones.', 'Coral reefs hosting sea anemones.', 'Least Concern'),
+('Spanish Dancer', 'Hexabranchus sanguineus', 'Nudibranchs', 'Uncommon', 'https://images.unsplash.com/photo-1516683018243-cd6d61f7f074', 'A large, colorful nudibranch that "dances" through the water.', 'Coral reefs and rocky ledges at night.', 'Data Deficient');
 
 -- 5. Create Test User Profile 
--- Note: auth.users must be created via Supabase Auth, but we can seed the public.profiles for a deterministic uuid
-insert into public.profiles (id, display_name, username, certification_level, total_dives, home_country) values
-('00000000-0000-0000-0000-000000000000', 'Reese Vierling', 'rcarvierling', 'Master Scuba Diver', 145, 'USA');
+insert into public.profiles (id, display_name, username, certification_level, total_dives, home_country, unit_system, blood_type, emergency_contact_name, emergency_contact_phone, medical_notes) values
+('00000000-0000-0000-0000-000000000000', 'Reese Vierling', 'rcarvierling', 'Master Scuba Diver', 145, 'USA', 'imperial', 'O+', 'Sarah Vierling', '+1-555-0199', 'No known allergies. History of mild ear clearing issues.');
 
 -- 6. Generate Hero Dive Logs
 with logged_user as (select id from public.profiles where username = 'rcarvierling' limit 1),
      blue_hole as (select id from public.dive_sites where name = 'Great Blue Hole' limit 1),
      molasses as (select id from public.dive_sites where name = 'Molasses Reef' limit 1),
      abyss_shop as (select id from public.dive_shops where name = 'Abyss Pro Center' limit 1)
-insert into public.dive_logs (user_id, dive_site_id, date, max_depth_m, bottom_time_min, water_temp_c, current_strength, rating, dive_shop_id) values
-((select id from logged_user), (select id from blue_hole), '2026-04-01', 40.5, 35, 26, 'mild', 5, (select id from abyss_shop)),
-((select id from logged_user), (select id from molasses), '2026-04-05', 18.2, 55, 28, 'none', 4, (select id from abyss_shop));
+insert into public.dive_logs (user_id, dive_site_id, date, max_depth_m, avg_depth_m, bottom_time_min, water_temp_c, current_strength, rating_score, dive_shop_id, start_pressure, end_pressure, tank_size_vol, visibility_m, computed_sac) values
+((select id from logged_user), (select id from blue_hole), '2026-04-01', 40.5, 28.5, 35, 26, 'mild', 5, (select id from abyss_shop), 3000, 700, 80, 25, 14.5),
+((select id from logged_user), (select id from molasses), '2026-04-05', 18.2, 12.4, 55, 28, 'none', 4, (select id from abyss_shop), 3100, 1100, 80, 20, 12.8);
 
 -- 7. Record Sighting Data
 with logged_user as (select id from public.profiles where username = 'rcarvierling' limit 1),
