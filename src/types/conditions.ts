@@ -9,6 +9,7 @@ export interface ConditionMetric {
   confidence: Confidence;
   distanceKm?: number;
   isObserved?: boolean;
+  interpretationLabel?: string;
 }
 
 export interface DiveSiteConditions {
