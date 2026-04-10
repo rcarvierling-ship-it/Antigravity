@@ -28,25 +28,45 @@ export function TopNav() {
   }, []);
 
   useEffect(() => {
-    async function getProfile() {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+    const supabase = createClient();
 
-      if (user) {
-        const { data } = await supabase
-          .from("profiles")
-          .select("display_name, certification_level, avatar_url, role")
-          .eq("id", user.id)
-          .single();
-        
-        if (data) {
-          setProfile(data);
-        }
+    const fetchProfileData = async (userId: string) => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("display_name, certification_level, avatar_url, role")
+        .eq("id", userId)
+        .single();
+      
+      if (data) {
+        setProfile(data);
       }
       setLoading(false);
-    }
+    };
 
-    getProfile();
+    // 1. Initial Check
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        fetchProfileData(user.id);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    // 2. Real-time Auth Listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+        if (session?.user) {
+          fetchProfileData(session.user.id);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setProfile(null);
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const links = [
@@ -105,10 +125,22 @@ export function TopNav() {
           </button>
           
           <div className="relative" ref={dropdownRef}>
-            {profile ? (
+            {loading && !profile ? (
+              <div className="flex items-center gap-3 glass py-1.5 px-3 rounded-full border-ocean-800/50">
+                <div className="flex flex-col text-right">
+                  <span className="text-[10px] text-ocean-500 font-bold animate-pulse uppercase tracking-tight">Initializing...</span>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-ocean-950 flex items-center justify-center border border-ocean-800/50">
+                  <div className="w-3 h-3 border-2 border-brand-cyan/30 border-t-brand-cyan rounded-full animate-spin" />
+                </div>
+              </div>
+            ) : profile ? (
               <button 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-3 glass py-1.5 px-3 rounded-full hover:border-brand-cyan/30 transition-colors cursor-pointer group"
+                className={cn(
+                  "flex items-center gap-3 glass py-1.5 px-3 rounded-full hover:border-brand-cyan/30 transition-all cursor-pointer group",
+                  isDropdownOpen && "border-brand-cyan/50 bg-ocean-800/80"
+                )}
               >
                 <div className="flex flex-col text-right">
                   <div className="flex items-center gap-1.5 justify-end">
@@ -116,11 +148,11 @@ export function TopNav() {
                       <span className="text-[8px] font-black text-white bg-brand-cyan py-0.5 px-1.5 rounded-sm tracking-widest uppercase">Admin</span>
                     )}
                     <span className="text-xs font-bold text-white group-hover:text-brand-cyan transition-colors">
-                      {loading ? "..." : profile?.display_name || "Guest Diver"}
+                      {profile?.display_name || "Guest Diver"}
                     </span>
                   </div>
                   <span className="text-[10px] text-brand-cyan uppercase font-bold tracking-tight">
-                    {loading ? "..." : profile?.certification_level || "No Rank"}
+                    {profile?.certification_level || "No Rank"}
                   </span>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-ocean-800 flex items-center justify-center border border-ocean-600 overflow-hidden group-hover:border-brand-cyan/50 transition-colors">
