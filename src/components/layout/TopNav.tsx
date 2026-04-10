@@ -3,14 +3,29 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compass, BookOpen, Users, Bell, User, Waves, AlertTriangle } from "lucide-react";
+import { Compass, BookOpen, Users, Bell, User, Waves, AlertTriangle, Settings, LogOut, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { logout } from "@/app/auth/actions";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRef } from "react";
 
 export function TopNav() {
   const pathname = usePathname();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     async function getProfile() {
@@ -89,28 +104,90 @@ export function TopNav() {
             <Bell className="w-5 h-5" />
           </button>
           
-          <Link href={profile ? "/profile" : "/auth/login"} className="flex items-center gap-3 glass py-1.5 px-3 rounded-full hover:border-brand-cyan/30 transition-colors cursor-pointer group">
-            <div className="flex flex-col text-right">
-              <div className="flex items-center gap-1.5 justify-end">
-                {profile?.role === 'admin' && (
-                  <span className="text-[8px] font-black text-white bg-brand-cyan py-0.5 px-1.5 rounded-sm tracking-widest uppercase">Admin</span>
-                )}
-                <span className="text-xs font-bold text-white group-hover:text-brand-cyan transition-colors">
-                  {loading ? "..." : profile?.display_name || "Guest Diver"}
-                </span>
-              </div>
-              <span className="text-[10px] text-brand-cyan uppercase font-bold tracking-tight">
-                {loading ? "..." : profile?.certification_level || "No Rank"}
-              </span>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-ocean-800 flex items-center justify-center border border-ocean-600 overflow-hidden group-hover:border-brand-cyan/50 transition-colors">
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <User className="w-4 h-4 text-ocean-300" />
+          <div className="relative" ref={dropdownRef}>
+            {profile ? (
+              <button 
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center gap-3 glass py-1.5 px-3 rounded-full hover:border-brand-cyan/30 transition-colors cursor-pointer group"
+              >
+                <div className="flex flex-col text-right">
+                  <div className="flex items-center gap-1.5 justify-end">
+                    {profile?.role === 'admin' && (
+                      <span className="text-[8px] font-black text-white bg-brand-cyan py-0.5 px-1.5 rounded-sm tracking-widest uppercase">Admin</span>
+                    )}
+                    <span className="text-xs font-bold text-white group-hover:text-brand-cyan transition-colors">
+                      {loading ? "..." : profile?.display_name || "Guest Diver"}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-brand-cyan uppercase font-bold tracking-tight">
+                    {loading ? "..." : profile?.certification_level || "No Rank"}
+                  </span>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-ocean-800 flex items-center justify-center border border-ocean-600 overflow-hidden group-hover:border-brand-cyan/50 transition-colors">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-4 h-4 text-ocean-300" />
+                  )}
+                </div>
+              </button>
+            ) : (
+              <Link href="/auth/login" className="flex items-center gap-3 glass py-1.5 px-3 rounded-full hover:border-brand-cyan/30 transition-colors cursor-pointer group">
+                <div className="flex flex-col text-right">
+                  <span className="text-xs font-bold text-white group-hover:text-brand-cyan transition-colors">Guest Diver</span>
+                  <span className="text-[10px] text-brand-cyan uppercase font-bold tracking-tight text-glow-cyan">Sign In</span>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-ocean-800 flex items-center justify-center border border-ocean-600 overflow-hidden group-hover:border-brand-cyan/50 transition-colors">
+                  <User className="w-4 h-4 text-ocean-300" />
+                </div>
+              </Link>
+            )}
+
+            <AnimatePresence>
+              {isDropdownOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute right-0 mt-3 w-56 glass-card rounded-2xl border border-ocean-800/80 bg-ocean-950/90 backdrop-blur-xl shadow-2xl p-2 z-[100]"
+                >
+                  <div className="px-3 py-2 mb-2 border-b border-ocean-800/30">
+                    <p className="text-[9px] font-black text-ocean-500 uppercase tracking-widest">Active Mission</p>
+                    <p className="text-xs font-bold text-white truncate">{profile?.display_name}</p>
+                  </div>
+
+                  <div className="space-y-0.5">
+                    {[
+                      { href: "/profile", label: "Profile Hub", icon: User },
+                      { href: "/profile/gear", label: "Gear Vault", icon: Activity },
+                      { href: "/tools", label: "Abyss Tools", icon: Compass },
+                      { href: "/settings", label: "Fleet Settings", icon: Settings },
+                    ].map(item => (
+                      <Link 
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-ocean-300 hover:text-white hover:bg-white/5 transition-all group"
+                      >
+                        <item.icon className="w-4 h-4 group-hover:text-brand-cyan transition-colors" />
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+
+                  <div className="mt-2 pt-2 border-t border-ocean-800/30">
+                    <button 
+                      onClick={() => logout()}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-red-500 hover:bg-red-500/10 transition-all group"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Abort Mission (Sign Out)
+                    </button>
+                  </div>
+                </motion.div>
               )}
-            </div>
-          </Link>
+            </AnimatePresence>
+          </div>
         </div>
 
       </div>
