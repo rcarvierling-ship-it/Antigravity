@@ -181,3 +181,13 @@ with logged_user as (select id from public.profiles where username = 'rcarvierli
      blue_hole as (select id from public.dive_sites where name = 'Great Blue Hole' limit 1)
 insert into public.user_marine_life_sightings (user_id, species_id, dive_site_id, date_seen) values
 ((select id from logged_user), (select id from whale_shark), (select id from blue_hole), '2026-04-01');
+-- 8. Mission Partner Intelligence (Buddy System)
+insert into public.profiles (id, display_name, username, certification_level, total_dives, home_country, home_base, buddy_availability, specialties) values
+('11111111-1111-1111-1111-111111111111', 'Sarah Chen', 'schen_dives', 'Advanced Open Water', 84, 'Singapore', 'Pulau Hantu', true, '["Nitrox", "Photo", "Reef"]'::jsonb),
+('22222222-2222-2222-2222-222222222222', 'Marcus Aurelius', 'stoic_diver', 'Technical Diver', 450, 'Italy', 'Portofino', true, '["Tech", "Deep", "Cave", "Wreck"]'::jsonb),
+('33333333-3333-3333-3333-333333333333', 'Elena Rodriguez', 'elena_sea', 'Rescue Diver', 120, 'Spain', 'Costa Brava', true, '["Rescue", "Marine Life", "Drift"]'::jsonb);
+
+-- 9. Sample Invitations
+insert into public.buddy_invitations (sender_id, receiver_id, status, message) values
+('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000000', 'pending', 'Hey Reese! Saw your logs from the Blue Hole. I am heading there next month, want to dive together?'),
+('33333333-3333-3333-3333-333333333333', '11111111-1111-1111-1111-111111111111', 'accepted', 'Sarah, let''s sync for the Maldives expedition.');
