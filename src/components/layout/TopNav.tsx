@@ -1,3 +1,4 @@
+// MISSION_CONTROL_VERSION: 1.0.2-STABLE
 "use client";
 
 import { useEffect, useState } from "react";
@@ -19,6 +20,7 @@ export function TopNav() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    console.log("[ABYSS HUD] v1.0.2-STABLE: Initializing Mission Dashboard...");
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
@@ -29,39 +31,54 @@ export function TopNav() {
   }, []);
 
   useEffect(() => {
+    console.log("[ABYSS HUD] v1.0.2-STABLE: Initializing Mission Dashboard...");
     const supabase = createClient();
 
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      console.error("[ABYSS HUD] CRITICAL: Satellite Link URL missing (NEXT_PUBLIC_SUPABASE_URL)");
+    }
+
     const fetchProfileData = async (userId: string) => {
-      const { data } = await supabase
+      console.log(`[ABYSS HUD] Fetching mission profile for ID: ${userId.substring(0, 8)}...`);
+      const { data, error } = await supabase
         .from("profiles")
         .select("display_name, certification_level, avatar_url, role")
         .eq("id", userId)
         .single();
       
+      if (error) {
+        console.error("[ABYSS HUD] Profile sync failed:", error.message);
+      }
+
       if (data) {
+        console.log("[ABYSS HUD] Mission profile synchronized successfully.");
         setProfile(data);
       }
       setLoading(false);
     };
 
-    // 1. Initial Check
+    // 1. Initial Identity Check
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
+        console.log("[ABYSS HUD] Active session detected on startup.");
         setUser(user);
         fetchProfileData(user.id);
       } else {
+        console.log("[ABYSS HUD] No active session detected. Awaiting authorization.");
         setLoading(false);
       }
     });
 
-    // 2. Real-time Auth Listener
+    // 2. Real-time Mission Authorization Listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+      console.log(`[ABYSS HUD] Identity Event: ${event}`);
+      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') {
         if (session?.user) {
           setUser(session.user);
           fetchProfileData(session.user.id);
         }
       } else if (event === 'SIGNED_OUT') {
+        console.warn("[ABYSS HUD] Session terminated. Returning to Guest mode.");
         setUser(null);
         setProfile(null);
         setLoading(false);
