@@ -12,7 +12,7 @@ export interface ConditionMetric {
   interpretationLabel?: string;
 }
 
-export interface DiveSiteConditions {
+export interface BaseDiveConditions {
   marine: {
     waveHeight: ConditionMetric;
     waveDirection: ConditionMetric;
@@ -30,6 +30,17 @@ export interface DiveSiteConditions {
     cloudCover: ConditionMetric;
     visibility: ConditionMetric;
   };
+  meta: {
+    primarySource: string;
+    confidenceSummary: Confidence;
+    note: string;
+    lastUpdated: string;
+    siteCategory: SiteCategory;
+    interpretationLabel: string;
+  };
+}
+
+export interface DiveSiteConditions extends BaseDiveConditions {
   analysis: {
     diveabilityScore: number;
     overallRating: "Excellent" | "Good" | "Fair" | "Poor" | "Avoid";
@@ -39,13 +50,5 @@ export interface DiveSiteConditions {
     summary: string;
     recommendedFor: string;
     notes: string[];
-  };
-  meta: {
-    primarySource: string;
-    confidenceSummary: Confidence;
-    note: string;
-    lastUpdated: string;
-    siteCategory: SiteCategory;
-    interpretationLabel: string;
   };
 }

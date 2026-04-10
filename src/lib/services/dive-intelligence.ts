@@ -1,4 +1,4 @@
-import { DiveSiteConditions, SiteCategory } from "@/types/conditions";
+import { BaseDiveConditions, DiveSiteConditions, SiteCategory } from "@/types/conditions";
 
 export interface SiteMetadata {
   id: string;
@@ -13,7 +13,7 @@ export interface SiteMetadata {
 }
 
 export class DiveIntelligenceService {
-  static analyze(data: DiveSiteConditions, site: SiteMetadata): DiveSiteConditions {
+  static analyze(data: BaseDiveConditions, site: SiteMetadata): DiveSiteConditions {
     const { marine, weather, meta } = data;
     const category = meta.siteCategory;
 

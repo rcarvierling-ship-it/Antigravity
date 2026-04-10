@@ -1,4 +1,4 @@
-import { Confidence, DiveSiteConditions, ConditionMetric, SiteCategory } from "@/types/conditions";
+import { Confidence, BaseDiveConditions, DiveSiteConditions, ConditionMetric, SiteCategory } from "@/types/conditions";
 import { DiveIntelligenceService, SiteMetadata } from "./dive-intelligence";
 
 const OPEN_METEO_MARINE_URL = "https://marine-api.open-meteo.com/v1/marine";
@@ -28,7 +28,7 @@ export async function getDiveSiteConditions(
     protection_level: 'low'
   };
 
-  let rawData: DiveSiteConditions;
+  let rawData: BaseDiveConditions;
 
   // PRIMARY: Stormglass
   try {
@@ -62,7 +62,7 @@ export async function getDiveSiteConditions(
   return DiveIntelligenceService.analyze(rawData, meta);
 }
 
-async function fetchStormGlassData(lat: number, lon: number, category: SiteCategory): Promise<DiveSiteConditions | null> {
+async function fetchStormGlassData(lat: number, lon: number, category: SiteCategory): Promise<BaseDiveConditions | null> {
   const apiKey = process.env.STORMGLASS_API_KEY;
   if (!apiKey) {
     console.warn("STORMGLASS_API_KEY missing - skipping Stormglass primary fetch.");
@@ -158,7 +158,7 @@ function getInterpretationLabel(category: SiteCategory): string {
     }
 }
 
-async function fetchNOAAData(lat: number, lon: number, category: SiteCategory): Promise<DiveSiteConditions | null> {
+async function fetchNOAAData(lat: number, lon: number, category: SiteCategory): Promise<BaseDiveConditions | null> {
   // 1. Find nearest station within 25km (Strict Limit)
   const stationsRes = await fetch(`${NOAA_STATIONS_URL}?lat=${lat}&lng=${lon}&radius=25`);
   const stationsData = await stationsRes.json();
@@ -263,7 +263,7 @@ async function fetchNOAAData(lat: number, lon: number, category: SiteCategory): 
   };
 }
 
-async function fetchOpenMeteoData(lat: number, lon: number, category: SiteCategory): Promise<DiveSiteConditions> {
+async function fetchOpenMeteoData(lat: number, lon: number, category: SiteCategory): Promise<BaseDiveConditions> {
   const [marineRes, forecastRes] = await Promise.all([
     fetch(`${OPEN_METEO_MARINE_URL}?latitude=${lat}&longitude=${lon}&current=wave_height,wave_direction,wave_period,ocean_current_velocity,ocean_current_direction`),
     fetch(`${OPEN_METEO_FORECAST_URL}?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,cloud_cover,wind_speed_10m,wind_direction_10m&hourly=visibility`)
