@@ -7,6 +7,7 @@ import Link from "next/link";
 import { cToF, mToFt, msToMph, cloudCoverToCondition } from "@/lib/conversions";
 import { createClient } from "@/lib/supabase/client";
 import { ConditionsGrid } from "@/components/shared/ConditionsDisplay";
+import { cn } from "@/lib/utils";
 
 interface SiteDetailModalProps {
   site: any | null;
