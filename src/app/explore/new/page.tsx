@@ -20,7 +20,11 @@ export default function NewDiveSite() {
     dive_type: "Reef",
     skill_level: "Intermediate",
     short_description: "",
-    image_url: ""
+    image_url: "",
+    shore_access_type: "Boat",
+    reef_orientation: "None",
+    site_exposure: "semi-protected",
+    protection_level: "medium"
   });
 
   const handleGetCurrentLocation = () => {
