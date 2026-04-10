@@ -236,6 +236,17 @@ export function TopNav() {
                         {item.label}
                       </Link>
                     ))}
+                    
+                    {profile?.role === 'admin' && (
+                      <Link 
+                        href="/admin"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="mt-2 flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-black text-brand-cyan bg-brand-cyan/5 border border-brand-cyan/20 hover:bg-brand-cyan/10 transition-all group"
+                      >
+                        <Shield className="w-4 h-4 group-hover:animate-pulse" />
+                        Fleet Command
+                      </Link>
+                    )}
                   </div>
 
                   <div className="mt-2 pt-2 border-t border-ocean-800/30">
