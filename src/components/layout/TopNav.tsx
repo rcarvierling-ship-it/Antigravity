@@ -12,6 +12,7 @@ import { useRef } from "react";
 
 export function TopNav() {
   const pathname = usePathname();
+  const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -46,6 +47,7 @@ export function TopNav() {
     // 1. Initial Check
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
+        setUser(user);
         fetchProfileData(user.id);
       } else {
         setLoading(false);
@@ -56,9 +58,11 @@ export function TopNav() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
         if (session?.user) {
+          setUser(session.user);
           fetchProfileData(session.user.id);
         }
       } else if (event === 'SIGNED_OUT') {
+        setUser(null);
         setProfile(null);
         setLoading(false);
       }
@@ -125,7 +129,7 @@ export function TopNav() {
           </button>
           
           <div className="relative" ref={dropdownRef}>
-            {loading && !profile ? (
+            {loading && !user ? (
               <div className="flex items-center gap-3 glass py-1.5 px-3 rounded-full border-ocean-800/50">
                 <div className="flex flex-col text-right">
                   <span className="text-[10px] text-ocean-500 font-bold animate-pulse uppercase tracking-tight">Initializing...</span>
@@ -134,7 +138,7 @@ export function TopNav() {
                   <div className="w-3 h-3 border-2 border-brand-cyan/30 border-t-brand-cyan rounded-full animate-spin" />
                 </div>
               </div>
-            ) : profile ? (
+            ) : user ? (
               <button 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className={cn(
@@ -148,11 +152,11 @@ export function TopNav() {
                       <span className="text-[8px] font-black text-white bg-brand-cyan py-0.5 px-1.5 rounded-sm tracking-widest uppercase">Admin</span>
                     )}
                     <span className="text-xs font-bold text-white group-hover:text-brand-cyan transition-colors">
-                      {profile?.display_name || "Guest Diver"}
+                      {profile?.display_name || user?.email?.split('@')[0] || "Authenticated"}
                     </span>
                   </div>
                   <span className="text-[10px] text-brand-cyan uppercase font-bold tracking-tight">
-                    {profile?.certification_level || "No Rank"}
+                    {profile?.certification_level || "Initial Access"}
                   </span>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-ocean-800 flex items-center justify-center border border-ocean-600 overflow-hidden group-hover:border-brand-cyan/50 transition-colors">
@@ -185,10 +189,20 @@ export function TopNav() {
                 >
                   <div className="px-3 py-2 mb-2 border-b border-ocean-800/30">
                     <p className="text-[9px] font-black text-ocean-500 uppercase tracking-widest">Active Mission</p>
-                    <p className="text-xs font-bold text-white truncate">{profile?.display_name}</p>
+                    <p className="text-xs font-bold text-white truncate">{profile?.display_name || user?.email}</p>
                   </div>
 
                   <div className="space-y-0.5">
+                    {!profile && (
+                      <Link 
+                        href="/onboarding"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-black text-brand-cyan bg-brand-cyan/5 border border-brand-cyan/20 hover:bg-brand-cyan/10 transition-all group mb-2"
+                      >
+                        <Zap className="w-4 h-4 animate-pulse" />
+                        Complete Profile
+                      </Link>
+                    )}
                     {[
                       { href: "/profile", label: "Profile Hub", icon: User },
                       { href: "/profile/gear", label: "Gear Vault", icon: Activity },
