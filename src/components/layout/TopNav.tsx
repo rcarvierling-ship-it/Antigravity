@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compass, BookOpen, Users, Bell, User, Waves, AlertTriangle, Settings, LogOut, Activity } from "lucide-react";
+import { Compass, BookOpen, Users, Bell, User, Waves, AlertTriangle, Settings, LogOut, Activity, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { logout } from "@/app/auth/actions";
