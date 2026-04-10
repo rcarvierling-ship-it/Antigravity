@@ -321,18 +321,3 @@ export default function SocialPage() {
     </main>
   );
 }
-
-              {buddies.length === 0 && !loading && (
-                <div className="py-20 text-center border-2 border-dashed border-ocean-800 rounded-3xl">
-                   <Users className="w-10 h-10 text-ocean-800 mx-auto mb-4" />
-                   <p className="text-sm text-ocean-600 font-bold uppercase tracking-widest">No divers found in this sector</p>
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-      </div>
-    </main>
-  );
-}

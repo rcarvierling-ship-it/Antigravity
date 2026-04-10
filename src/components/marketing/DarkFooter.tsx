@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Anchor, Mail, Github, Twitter, Instagram, Globe } from "lucide-react";
+import { Anchor, Mail, Globe } from "lucide-react";
 
 export function DarkFooter() {
   return (
@@ -20,15 +20,6 @@ export function DarkFooter() {
             The definitive platform for technical divers. Precision tracking, global discovery, and community-driven safety protocols.
           </p>
           <div className="flex items-center gap-4">
-            <Link href="#" className="p-2 glass rounded-lg text-ocean-400 hover:text-brand-cyan transition-colors">
-              <Twitter className="w-4 h-4" />
-            </Link>
-            <Link href="#" className="p-2 glass rounded-lg text-ocean-400 hover:text-brand-cyan transition-colors">
-              <Github className="w-4 h-4" />
-            </Link>
-            <Link href="#" className="p-2 glass rounded-lg text-ocean-400 hover:text-brand-cyan transition-colors">
-              <Instagram className="w-4 h-4" />
-            </Link>
           </div>
         </div>
 
