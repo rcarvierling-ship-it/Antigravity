@@ -79,6 +79,12 @@ export function TopNav() {
 
         {/* ACTIONS */}
         <div className="flex items-center gap-4">
+          <Link 
+            href="/safety"
+            className="p-2 text-red-500 hover:text-white hover:bg-red-600/20 transition-all rounded-full glass border border-red-900/30 group"
+          >
+            <AlertTriangle className="w-5 h-5 group-hover:animate-pulse" />
+          </Link>
           <button className="p-2 text-ocean-300 hover:text-brand-cyan transition-colors rounded-full glass hover:bg-ocean-800/50">
             <Bell className="w-5 h-5" />
           </button>

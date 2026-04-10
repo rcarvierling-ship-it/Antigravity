@@ -2,29 +2,36 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Fish, MapPin, Calendar, Info, Search, Filter, Camera } from "lucide-react";
+import { Fish, MapPin, Calendar, Info, Search, Filter, Camera, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { SpeciesDossier } from "@/components/marine-life/SpeciesDossier";
+import { EncounterLogModal } from "@/components/marine-life/EncounterLogModal";
 
 export default function MarineLifeTracker() {
   const supabase = createClient();
   const [species, setSpecies] = useState<any[]>([]);
   const [sightings, setSightings] = useState<any[]>([]);
+  const [sites, setSites] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
+  const [showLogModal, setShowLogModal] = useState(false);
+  const [selectedSpecimen, setSelectedSpecimen] = useState<any>(null);
 
   useEffect(() => {
     async function fetchData() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [speciesRes, sightingsRes] = await Promise.all([
+      const [speciesRes, sightingsRes, sitesRes] = await Promise.all([
         supabase.from("marine_life_species").select("*"),
-        supabase.from("user_marine_life_sightings").select("species_id, date_seen, dive_site_id").eq("user_id", user.id)
+        supabase.from("user_marine_life_sightings").select("*").eq("user_id", user.id),
+        supabase.from("dive_sites").select("id, name")
       ]);
 
       if (speciesRes.data) setSpecies(speciesRes.data);
       if (sightingsRes.data) setSightings(sightingsRes.data);
+      if (sitesRes.data) setSites(sitesRes.data);
       setLoading(false);
     }
     fetchData();
@@ -41,6 +48,13 @@ export default function MarineLifeTracker() {
     return matchesSearch && matchesFilter;
   });
 
+  const handleEncounterSaved = (newSighting?: any) => {
+    setShowLogModal(false);
+    if (newSighting) {
+      setSightings(prev => [...prev, newSighting]);
+    }
+  };
+
   return (
     <main className="w-full min-h-screen bg-deep-sea pt-24 pb-32 px-4 md:px-8">
       <div className="max-w-6xl mx-auto">
@@ -54,21 +68,11 @@ export default function MarineLifeTracker() {
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-white leading-none">Species Discovery</h1>
             <p className="text-ocean-400 mt-4 max-w-lg font-medium">
-              Cataloging your encounters with the abyss. You have discovered <span className="text-brand-teal">{seenIds.size}</span> out of {species.length} known species.
+              Cataloging your encounters with the abyss. You have discovered <span className="text-brand-teal font-black">{seenIds.size}</span> out of {species.length} known species.
             </p>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-3">
-             <div className="relative group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ocean-500 group-focus-within:text-brand-cyan transition-colors" />
-                <input 
-                  type="text" 
-                  placeholder="Search species..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-ocean-950/50 border border-ocean-800 rounded-2xl pl-11 pr-4 py-3 text-sm text-white focus:outline-none focus:border-brand-cyan transition-all w-full sm:w-64"
-                />
-             </div>
+          <div className="flex flex-col lg:flex-row gap-4">
              <div className="flex bg-ocean-950/50 p-1 rounded-2xl border border-ocean-800">
                 <button 
                   onClick={() => setActiveFilter("all")}
@@ -82,11 +86,24 @@ export default function MarineLifeTracker() {
                 >
                   Seen
                 </button>
+             </div>
+
+             <div className="flex gap-3">
+                <div className="relative group flex-1 min-w-[200px]">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ocean-500 group-focus-within:text-brand-cyan transition-colors" />
+                  <input 
+                    type="text" 
+                    placeholder="Search catalog..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="bg-ocean-950/50 border border-ocean-800 rounded-2xl pl-11 pr-4 py-3 text-sm text-white focus:outline-none focus:border-brand-cyan transition-all w-full"
+                  />
+                </div>
                 <button 
-                  onClick={() => setActiveFilter("unseen")}
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeFilter === "unseen" ? "bg-ocean-800 text-white" : "text-ocean-500 hover:text-white"}`}
+                  onClick={() => setShowLogModal(true)}
+                  className="p-3.5 bg-brand-teal text-deep-sea rounded-2xl hover:shadow-[0_0_20px_rgba(45,212,191,0.4)] transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap font-black uppercase text-[10px] tracking-widest"
                 >
-                  Hidden
+                  <Plus className="w-4 h-4" /> Register Discovery
                 </button>
              </div>
           </div>
@@ -97,6 +114,8 @@ export default function MarineLifeTracker() {
           <AnimatePresence mode="popLayout">
             {filteredSpecies.map((s, index) => {
               const isSeen = seenIds.has(s.id);
+              const sighting = sightings.find(sig => sig.species_id === s.id);
+
               return (
                 <motion.div
                   layout
@@ -105,7 +124,8 @@ export default function MarineLifeTracker() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ delay: index * 0.05 }}
                   key={s.id}
-                  className={`group relative aspect-[3/4] rounded-3xl overflow-hidden border transition-all duration-500 ${isSeen ? "border-brand-teal/30 shadow-[0_0_30px_rgba(45,212,191,0.05)]" : "border-ocean-800 grayscale sepia hover:grayscale-0 hover:sepia-0"}`}
+                  onClick={() => setSelectedSpecimen(s)}
+                  className={`group relative aspect-[3/4] rounded-3xl overflow-hidden border transition-all duration-500 cursor-pointer ${isSeen ? "border-brand-teal/30 shadow-[0_0_30px_rgba(45,212,191,0.05)]" : "border-ocean-800 grayscale sepia hover:grayscale-0 hover:sepia-0 hover:border-ocean-600"}`}
                 >
                   {/* Background Image / Placeholder */}
                   <div className="absolute inset-0 bg-ocean-950">
@@ -131,28 +151,28 @@ export default function MarineLifeTracker() {
                       <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isSeen ? "text-brand-teal" : "text-ocean-500"}`}>
                         {s.category}
                       </span>
-                      <h3 className={`text-xl font-bold leading-tight ${isSeen ? "text-white" : "text-ocean-600 font-mono"}`}>
+                      <h3 className={`text-lg font-bold leading-tight tracking-tight ${isSeen ? "text-white" : "text-ocean-600 font-mono"}`}>
                         {isSeen ? s.name : "Unidentified"}
                       </h3>
                       {isSeen && s.scientific_name && (
-                        <p className="text-[10px] text-ocean-400 italic">{s.scientific_name}</p>
+                        <p className="text-[10px] text-ocean-400 italic truncate">{s.scientific_name}</p>
                       )}
                     </div>
 
                     {isSeen ? (
                       <div className="mt-4 pt-4 border-t border-ocean-400/10 flex items-center justify-between">
                          <div className="flex items-center gap-1.5 text-[10px] font-bold text-ocean-300">
-                            <Calendar className="w-3 h-3" />
-                            {new Date(sightings.find(sig => sig.species_id === s.id)?.date_seen).toLocaleDateString()}
+                            <Calendar className="w-3 h-3 text-brand-teal" />
+                            {new Date(sighting?.date_seen).toLocaleDateString()}
                          </div>
-                         <button className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors group/btn">
-                            <Info className="w-3 h-3 text-ocean-300 group-hover/btn:text-white" />
-                         </button>
+                         <div className="p-2 bg-white/5 rounded-full text-ocean-400">
+                            <Info className="w-3 h-3" />
+                         </div>
                       </div>
                     ) : (
                       <div className="mt-4 flex items-center gap-2">
                         <div className="px-3 py-1 bg-ocean-800/50 rounded-lg text-[9px] font-black text-ocean-400 uppercase tracking-widest border border-ocean-700/50">
-                          Not Discovered
+                          Classified
                         </div>
                       </div>
                     )}
@@ -172,8 +192,27 @@ export default function MarineLifeTracker() {
           </AnimatePresence>
         </div>
 
+        {/* Modals */}
+        <AnimatePresence>
+          {showLogModal && (
+            <EncounterLogModal 
+              speciesList={species} 
+              sitesList={sites} 
+              onClose={handleEncounterSaved} 
+            />
+          )}
+
+          {selectedSpecimen && (
+            <SpeciesDossier 
+              species={selectedSpecimen} 
+              sighting={sightings.find(s => s.species_id === selectedSpecimen.id)}
+              onClose={() => setSelectedSpecimen(null)}
+            />
+          )}
+        </AnimatePresence>
+
         {/* Empty State */}
-        {filteredSpecies.length === 0 && (
+        {filteredSpecies.length === 0 && !loading && (
           <div className="py-32 text-center">
             <Fish className="w-12 h-12 text-ocean-800 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-ocean-600">No matching specimens found</h3>

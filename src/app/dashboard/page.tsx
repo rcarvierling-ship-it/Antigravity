@@ -5,6 +5,7 @@ import { QuickStats } from "@/components/home/QuickStats";
 import { RecentDives } from "@/components/home/RecentDives";
 import { FeaturedSites } from "@/components/home/FeaturedSites";
 import { LiveWeatherTile } from "@/components/home/LiveWeatherTile";
+import { MissionAlerts } from "@/components/buddies/MissionAlerts";
 
 import diveSites from "@/lib/data/dive-sites.json";
 
@@ -72,6 +73,7 @@ export default async function DashboardPage() {
       />
       
       <div className="flex-1 w-full max-w-4xl mx-auto flex flex-col items-center px-4 md:px-0 space-y-12 pb-32">
+        <MissionAlerts />
         <QuickStats profile={profile} gearAlert={gearAlert} />
         
         <section className="w-full">

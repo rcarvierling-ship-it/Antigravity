@@ -1,10 +1,14 @@
 export type Confidence = "High" | "Medium" | "Low";
 
+export type SiteCategory = 'bridge' | 'shore' | 'inlet' | 'muck' | 'reef' | 'wreck' | 'wall' | 'drift' | 'open_ocean' | 'unknown';
+
 export interface ConditionMetric {
   value: string | number;
   unit: string;
   source: string;
   confidence: Confidence;
+  distanceKm?: number;
+  isObserved?: boolean;
 }
 
 export interface DiveSiteConditions {
@@ -30,5 +34,7 @@ export interface DiveSiteConditions {
     confidenceSummary: Confidence;
     note: string;
     lastUpdated: string;
+    siteCategory: SiteCategory;
+    interpretationLabel: string;
   };
 }

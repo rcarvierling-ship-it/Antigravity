@@ -6,7 +6,7 @@ import { X, MapPin, Waves, Wind, Thermometer, ArrowRight, Gauge, Cloud, ChevronD
 import Link from "next/link";
 import { cToF, mToFt, msToMph, cloudCoverToCondition } from "@/lib/conversions";
 import { createClient } from "@/lib/supabase/client";
-import { ConditionsMetric, ConditionsFooter } from "@/components/shared/ConditionsDisplay";
+import { ConditionsGrid } from "@/components/shared/ConditionsDisplay";
 
 interface SiteDetailModalProps {
   site: any | null;
@@ -27,8 +27,8 @@ export function SiteDetailModal({ site, onClose }: SiteDetailModalProps) {
     setDiveHistory(null);
     setWeatherData(null);
     
-    // Fetch live weather data with country-aware overrides
-    fetch(`/api/weather?lat=${site.position.lat}&lng=${site.position.lng}&country=${encodeURIComponent(site.country || '')}`)
+    // Fetch live weather data with country-aware overrides and site-type context
+    fetch(`/api/weather?lat=${site.position.lat}&lng=${site.position.lng}&country=${encodeURIComponent(site.country || '')}&type=${encodeURIComponent(site.type || '')}`)
       .then(res => {
         if (!res.ok) throw new Error("Failed to fetch");
         return res.json();
@@ -153,22 +153,20 @@ export function SiteDetailModal({ site, onClose }: SiteDetailModalProps) {
                 <div className="p-4 bg-red-950/20 border border-red-900/40 rounded-2xl text-red-300 text-xs mb-8 flex items-center gap-3">
                   <Cloud className="w-5 h-5 text-red-400" /> Telemetry link offline. Check connection.
                 </div>
+              {loading ? (
+                <div className="grid grid-cols-2 gap-3 mb-8">
+                  {[1, 2, 3, 4, 5, 6].map(i => (
+                    <div key={i} className="h-20 bg-ocean-800/20 rounded-2xl animate-pulse" />
+                  ))}
+                </div>
+              ) : error ? (
+                <div className="p-4 bg-red-950/20 border border-red-900/40 rounded-2xl text-red-300 text-xs mb-8 flex items-center gap-3">
+                  <Cloud className="w-5 h-5 text-red-400" /> Telemetry link offline. Check connection.
+                </div>
               ) : weatherData ? (
-                <>
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    <ConditionsMetric label="Wave Height" metric={weatherData.marine.waveHeight} icon={<Waves className="w-4 h-4" />} />
-                    <ConditionsMetric label="Sea Temp" metric={weatherData.marine.seaSurfaceTemp} icon={<Thermometer className="w-4 h-4" />} />
-                    <ConditionsMetric label="Wind Speed" metric={weatherData.weather.windSpeed} icon={<Wind className="w-4 h-4" />} />
-                    <ConditionsMetric label="Current" metric={weatherData.marine.currentSpeed} icon={<Waves className="w-4 h-4" />} />
-                    <ConditionsMetric label="Air Temp" metric={weatherData.weather.airTemp} icon={<Thermometer className="w-4 h-4" />} />
-                    <ConditionsMetric label="Cloud Cover" metric={weatherData.weather.cloudCover} icon={<Cloud className="w-4 h-4" />} />
-                    {weatherData.marine.tide.value !== "Unavailable" && (
-                      <ConditionsMetric label="Tide Level" metric={weatherData.marine.tide} icon={<Gauge className="w-4 h-4" />} />
-                    )}
-                    <ConditionsMetric label="Precip" metric={weatherData.weather.precipitationChance} icon={<Cloud className="w-4 h-4" />} />
-                  </div>
-                  <ConditionsFooter meta={weatherData.meta} />
-                </>
+                <div className="mb-8">
+                   <ConditionsGrid data={weatherData} />
+                </div>
               ) : null}
 
               <Link 

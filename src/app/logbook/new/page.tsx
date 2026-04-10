@@ -5,7 +5,7 @@ import { ArrowLeft, Save, MapPin, Calendar, Clock, Anchor, Wind, Users, Zap, Sta
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { calculateSACRate, checkBadgeEligibility } from "@/lib/dive-logic";
+import { calculateSAC } from "@/lib/services/analytics";
 import { useState, useEffect } from "react";
 
 export default function NewDiveLog() {
@@ -19,8 +19,8 @@ export default function NewDiveLog() {
   const [selectedSpecies, setSelectedSpecies] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
-  const startPsi = watch("startPsi");
-  const endPsi = watch("endPsi");
+  const startPressure = watch("startPressure");
+  const endPressure = watch("endPressure");
   const depth = watch("avgDepth");
   const duration = watch("duration");
 
@@ -46,12 +46,13 @@ export default function NewDiveLog() {
     
     if (!user) return;
 
-    const sac = calculateSACRate({
-      startPsi: Number(data.startPsi),
-      endPsi: Number(data.endPsi),
-      tankVolumeCuft: Number(data.tankVolume),
-      avgDepthFt: Number(data.avgDepth) * 3.28,
-      durationMin: Number(data.duration)
+    const sac = calculateSAC({
+      startPressure: Number(data.startPressure),
+      endPressure: Number(data.endPressure),
+      tankSize: Number(data.tankVolume),
+      avgDepthM: Number(data.avgDepth),
+      bottomTime: Number(data.duration),
+      isImperial: true // Default for now, can be toggled by user preference
     });
 
     // 1. Insert Dive Log
@@ -63,16 +64,16 @@ export default function NewDiveLog() {
       bottom_time_min: Number(data.duration),
       water_temp_c: Number(data.temp),
       gas_mix: data.gasMix,
-      start_psi: Number(data.startPsi),
-      end_psi: Number(data.endPsi),
-      tank_volume_cuft: Number(data.tankVolume),
+      start_pressure: Number(data.startPressure),
+      end_pressure: Number(data.endPressure),
+      tank_size_vol: Number(data.tankVolume),
       avg_depth_m: Number(data.avgDepth),
-      rating: rating,
+      rating_score: rating,
       current_strength: data.currentStrength,
       dive_shop_id: data.diveShop !== "none" ? data.diveShop : null,
       notes: data.notes,
       visibility_m: Number(data.visibility),
-      air_analytics_json: { sac }
+      computed_sac: sac
     }).select().single();
 
     if (!error && logData) {
@@ -243,24 +244,24 @@ export default function NewDiveLog() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ocean-200 mb-2">Start PSI</label>
+                <label className="block text-sm font-medium text-ocean-200 mb-2">Start PSI / BAR</label>
                 <input 
                   type="number"
-                  {...register("startPsi")}
+                  {...register("startPressure")}
                   className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ocean-200 mb-2">End PSI</label>
+                <label className="block text-sm font-medium text-ocean-200 mb-2">End PSI / BAR</label>
                 <input 
                   type="number"
-                  {...register("endPsi")}
+                  {...register("endPressure")}
                   className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
                 />
               </div>
             </div>
             
-            {(startPsi && endPsi && depth && duration) && (
+            {(startPressure && endPressure && depth && duration) && (
               <div className="mt-6 p-4 bg-brand-cyan/10 border border-brand-cyan/30 rounded-2xl flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Zap className="w-5 h-5 text-brand-cyan" />
@@ -268,15 +269,16 @@ export default function NewDiveLog() {
                 </div>
                 <div className="text-right">
                   <div className="text-brand-cyan font-black text-2xl leading-none">
-                    {calculateSACRate({
-                      startPsi: Number(startPsi),
-                      endPsi: Number(endPsi),
-                      tankVolumeCuft: Number(watch("tankVolume") || 80),
-                      avgDepthFt: Number(depth) * 3.28,
-                      durationMin: Number(duration)
+                    {calculateSAC({
+                      startPressure: Number(startPressure),
+                      endPressure: Number(endPressure),
+                      tankSize: Number(watch("tankVolume") || 80),
+                      avgDepthM: Number(depth),
+                      bottomTime: Number(duration),
+                      isImperial: true
                     })}
                   </div>
-                  <span className="text-[10px] text-ocean-400 font-bold uppercase tracking-widest">SAC Rate (cuft/min)</span>
+                  <span className="text-[10px] text-ocean-400 font-bold uppercase tracking-widest">SAC Rate (L/min)</span>
                 </div>
               </div>
             )}

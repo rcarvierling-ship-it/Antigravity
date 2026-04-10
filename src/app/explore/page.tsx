@@ -159,7 +159,7 @@ export default function ExplorePage() {
 
                 {/* Real-time Telemetry Preview */}
                 <div className="pt-3 border-t border-ocean-800/20">
-                   <ConditionsPreview lat={m.position.lat} lng={m.position.lng} country={m.country} />
+                   <ConditionsPreview lat={m.position.lat} lng={m.position.lng} country={m.country} type={m.type} />
                 </div>
               </div>
             ))}
