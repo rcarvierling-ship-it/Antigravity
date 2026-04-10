@@ -82,38 +82,43 @@ export default function ExplorePage() {
   };
 
   return (
-    <main className="w-full grid grid-cols-1 md:grid-cols-[400px_1fr] overflow-hidden bg-deep-sea" style={{ height: "calc(100vh - 73px)" }}>
+    <main className="w-full grid grid-cols-1 md:grid-cols-[400px_1fr] overflow-hidden bg-deep-sea relative" style={{ height: "calc(100vh - 73px)" }}>
+      {/* HUD Background Grid */}
+      <div className="absolute inset-0 hud-grid opacity-10 pointer-events-none z-0" />
       
       {/* Sidebar Panel */}
-      <div className={`z-10 bg-deep-sea border-r border-ocean-800/20 flex flex-col h-full overflow-hidden shadow-2xl transition-transform duration-300 md:translate-x-0 ${mobileView === "list" ? "translate-x-0" : "-translate-x-full md:translate-x-0 absolute md:relative w-full md:w-auto h-full"}`}>
-        <div className="p-5 h-full flex flex-col pt-10 md:pt-6 overflow-hidden">
-          <div className="flex items-center justify-between mb-6 shrink-0">
+      <div className={`z-10 bg-deep-sea/80 backdrop-blur-xl border-r border-ocean-800/20 flex flex-col h-full overflow-hidden shadow-2xl transition-transform duration-300 md:translate-x-0 scan-line ${mobileView === "list" ? "translate-x-0" : "-translate-x-full md:translate-x-0 absolute md:relative w-full md:w-auto h-full"}`}>
+        <div className="p-5 h-full flex flex-col pt-10 md:pt-6 overflow-hidden relative z-10">
+          <div className="flex items-center justify-between mb-8 shrink-0">
             <div>
-               <h1 className="text-2xl font-black text-white tracking-tight">Mission Discovery</h1>
-               <p className="text-[10px] text-ocean-500 font-bold uppercase tracking-[0.2em] mt-1">Satellite Telemetry Active</p>
+               <div className="flex items-center gap-2 mb-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-flicker" />
+                  <span className="text-[8px] font-black text-brand-cyan uppercase tracking-[0.4em]">Satellite Link: Active</span>
+               </div>
+               <h1 className="text-3xl font-black text-white tracking-tighter uppercase leading-none">Mission <span className="text-brand-cyan">Discovery</span></h1>
             </div>
-            <Link href="/explore/new" className="p-2.5 bg-brand-cyan hover:bg-brand-cyan/80 text-deep-sea rounded-xl transition-all shadow-lg shadow-brand-cyan/20 active:scale-95 group">
+            <Link href="/explore/new" className="p-3 bg-brand-cyan hover:bg-brand-cyan/80 text-deep-sea rounded-lg transition-all shadow-lg shadow-brand-cyan/20 active:scale-95 group">
               <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
             </Link>
           </div>
           
-          <div className="relative flex items-center mb-4 shrink-0 px-1">
+          <div className="relative flex items-center mb-6 shrink-0 px-1">
             <Search className="absolute left-4 w-4 h-4 text-ocean-500" />
             <input 
               type="text" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Filter by country, region, or site name..." 
-              className="w-full bg-ocean-950/50 border border-ocean-800/50 rounded-2xl py-3 pl-11 pr-4 text-white placeholder-ocean-600 focus:outline-none focus:border-brand-cyan/50 transition-all text-sm font-medium"
+              placeholder="SEARCH BY COORDINATES OR NAME..." 
+              className="w-full bg-ocean-950/50 border border-ocean-800/50 rounded-lg py-4 pl-11 pr-4 text-white placeholder-ocean-700 focus:outline-none focus:border-brand-cyan/50 transition-all text-[10px] font-black uppercase tracking-widest"
             />
           </div>
 
           <SiteFilterBar activeCategory={selectedCategory} onSelect={setSelectedCategory} />
 
-          <div className="flex items-center justify-between mb-4 shrink-0 px-1 mt-4">
+          <div className="flex items-center justify-between mb-4 shrink-0 px-1 mt-6">
             <div className="flex items-center gap-2">
-               <div className="w-1.5 h-1.5 rounded-full bg-brand-teal animate-pulse" />
-               <p className="text-[10px] text-ocean-400 font-black tracking-widest uppercase">
+               <div className="w-1 h-1 rounded-full bg-brand-teal" />
+               <p className="text-[8px] text-ocean-500 font-black tracking-[0.3em] uppercase">
                   {filteredMarkers.length} Visualized Hits
                </p>
             </div>
@@ -132,10 +137,10 @@ export default function ExplorePage() {
                   setSelectedSite(m);
                   if (window.innerWidth < 768) setMobileView("map");
                 }}
-                className={`glass-card p-5 rounded-3xl cursor-pointer transition-all duration-300 group border-2 ${selectedSite?.key === m.key ? 'border-brand-cyan/60 bg-brand-cyan/5 shadow-[0_0_30px_rgba(0,229,255,0.05)]' : 'border-transparent hover:border-ocean-800/50'}`}
+                className={`glass-card p-6 rounded-xl cursor-pointer transition-all duration-300 group border-2 ${selectedSite?.key === m.key ? 'border-brand-cyan/60 bg-brand-cyan/5 shadow-[0_0_40px_rgba(0,229,255,0.05)]' : 'border-white/5 hover:border-ocean-800/50'}`}
               >
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-white font-bold text-lg group-hover:text-brand-cyan transition-colors truncate pr-2 tracking-tight">{m.name}</h3>
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-white font-black text-lg group-hover:text-brand-cyan transition-colors truncate pr-2 tracking-tighter uppercase leading-none">{m.name}</h3>
                   {currentUser?.role === 'admin' && (
                     <button 
                       onClick={(e) => handleDeleteSite(m.key, e)}
@@ -145,20 +150,19 @@ export default function ExplorePage() {
                     </button>
                   )}
                 </div>
-                <div className="flex items-center gap-2 mb-3">
-                   <span className="text-[9px] font-black text-brand-teal bg-brand-teal/5 px-2 py-0.5 rounded-lg border border-brand-teal/20 tracking-widest uppercase">{m.type}</span>
-                   <span className="text-[9px] font-bold text-ocean-800">•</span>
-                   <span className="text-[9px] font-black text-ocean-400 uppercase tracking-widest">{m.skill}</span>
+                <div className="flex items-center gap-2 mb-4">
+                   <span className="text-[8px] font-black text-brand-teal bg-brand-teal/5 px-2 py-1 rounded border border-brand-teal/20 tracking-[0.2em] uppercase">{m.type}</span>
+                   <span className="text-[8px] font-black text-ocean-400 uppercase tracking-[0.2em]">{m.skill}</span>
                 </div>
-                <div className="flex justify-between items-center text-xs font-semibold mb-3">
-                  <p className="text-ocean-400 flex items-center gap-1.5 truncate max-w-[70%] font-medium">
+                <div className="flex justify-between items-center text-[10px] font-black mb-4 uppercase tracking-widest text-ocean-300">
+                  <p className="flex items-center gap-1.5 truncate max-w-[70%]">
                     <MapPin className="w-3.5 h-3.5 text-ocean-600" /> {m.country}
                   </p>
-                  <p className="text-brand-cyan text-[10px] font-black tracking-widest uppercase">{Math.round(m.depth * 3.28)}ft MAX</p>
+                  <p className="text-brand-cyan text-glow-cyan leading-none">{Math.round(m.depth * 3.28)}FT MAX</p>
                 </div>
 
                 {/* Real-time Telemetry Preview */}
-                <div className="pt-3 border-t border-ocean-800/20">
+                <div className="pt-4 border-t border-ocean-800/20">
                    <ConditionsPreview lat={m.position.lat} lng={m.position.lng} country={m.country} type={m.type} />
                 </div>
               </div>

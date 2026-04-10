@@ -51,64 +51,74 @@ export default function SettingsPage() {
   if (loading) return <div className="min-h-screen bg-deep-sea flex items-center justify-center text-ocean-300 font-bold tracking-widest uppercase">Fetching Mission Config...</div>;
 
   return (
-    <main className="w-full min-h-screen px-4 md:px-8 py-8 pt-24 md:pt-12 pb-24 bg-deep-sea">
-      <div className="max-w-2xl mx-auto">
+    <main className="w-full min-h-screen px-4 md:px-8 py-8 pt-24 md:pt-12 pb-24 bg-deep-sea relative overflow-hidden">
+      {/* HUD Background Grid */}
+      <div className="absolute inset-0 hud-grid opacity-10 pointer-events-none z-0" />
+      
+      <div className="max-w-2xl mx-auto relative z-10 scan-line">
         
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Link href="/profile" className="p-2 glass rounded-xl text-ocean-300 hover:text-white transition-colors">
+        <div className="flex items-center gap-6 mb-12">
+          <Link href="/profile" className="p-3 glass rounded-lg text-ocean-400 hover:text-brand-cyan transition-all border border-ocean-800/50">
             <ChevronLeft className="w-6 h-6" />
           </Link>
-          <h1 className="text-3xl font-bold text-white">Settings</h1>
+          <div>
+             <div className="flex items-center gap-2 mb-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-flicker" />
+                <span className="text-[8px] font-black text-brand-cyan uppercase tracking-[0.4em]">Config Node: 0x92f</span>
+             </div>
+             <h1 className="text-4xl font-black text-white tracking-tighter uppercase leading-none">Settings</h1>
+          </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* Preferences Section */}
-          <section className="glass-card rounded-[2rem] p-6 border border-ocean-800/50">
-            <h2 className="text-xs font-bold text-ocean-400 uppercase tracking-widest mb-6 px-2">Account Preferences</h2>
+          <section className="glass-card rounded-2xl p-8 border border-white/5 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-brand-cyan/20" />
+            <h2 className="text-[10px] font-black text-ocean-500 uppercase tracking-[0.4em] mb-8">Mission_Parameters</h2>
             
-            <div className="space-y-2">
+            <div className="space-y-4">
               <div 
                 onClick={() => updatePreference('unit_system', profile.unit_system === 'metric' ? 'imperial' : 'metric')}
-                className="flex items-center justify-between p-4 rounded-2xl hover:bg-ocean-900/40 transition-colors group cursor-pointer"
+                className="flex items-center justify-between p-6 rounded-xl hover:bg-brand-cyan/5 transition-all group cursor-pointer border border-white/5 active:scale-[0.98]"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-ocean-800 flex items-center justify-center text-ocean-300 group-hover:text-brand-cyan transition-colors">
+                <div className="flex items-center gap-6">
+                  <div className="w-12 h-12 rounded bg-ocean-1000 flex items-center justify-center text-ocean-300 group-hover:text-brand-cyan transition-all border border-ocean-800 shadow-inner">
                     <Globe className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="block text-white font-medium">Units</span>
-                    <span className="text-xs text-ocean-500">{profile?.unit_system === 'metric' ? 'Metric (m, °C, bar)' : 'Imperial (ft, °F, psi)'}</span>
+                    <span className="block text-white font-black uppercase tracking-widest text-sm mb-1">Unit Protocol</span>
+                    <span className="text-[10px] text-ocean-500 font-bold uppercase tracking-widest">{profile?.unit_system === 'metric' ? 'Metric (m, °C, bar)' : 'Imperial (ft, °F, psi)'}</span>
                   </div>
                 </div>
                 <div className={cn(
-                  "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all",
-                  profile?.unit_system === 'metric' ? "bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30" : "bg-ocean-800 text-ocean-400 border-ocean-700"
+                  "px-4 py-2 rounded font-black text-[10px] uppercase tracking-widest border transition-all",
+                  profile?.unit_system === 'metric' ? "bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30 shadow-[0_0_15px_rgba(0,229,255,0.1)]" : "bg-ocean-1000 text-ocean-600 border-ocean-900"
                 )}>
-                  {profile?.unit_system}
+                   {profile?.unit_system || 'protocol_error'}
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-ocean-900/40 transition-colors group cursor-not-allowed opacity-50">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-ocean-800 flex items-center justify-center text-ocean-300 group-hover:text-brand-cyan transition-colors">
+              <div className="flex items-center justify-between p-6 rounded-xl opacity-30 cursor-not-allowed border border-white/5">
+                <div className="flex items-center gap-6">
+                  <div className="w-12 h-12 rounded bg-ocean-1000 flex items-center justify-center text-ocean-700">
                     <Bell className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="block text-white font-medium">Notifications</span>
-                    <span className="text-xs text-ocean-500">Muted for depth deep focus</span>
+                    <span className="block text-ocean-600 font-black uppercase tracking-widest text-sm mb-1">Neural Links</span>
+                    <span className="text-[10px] text-ocean-700 font-bold uppercase tracking-widest">Encrypted Silence</span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-ocean-900/40 transition-colors group cursor-not-allowed opacity-50">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-ocean-800 flex items-center justify-center text-ocean-300 group-hover:text-brand-cyan transition-colors">
+              <div className="flex items-center justify-between p-6 rounded-xl opacity-30 cursor-not-allowed border border-white/5">
+                <div className="flex items-center gap-6">
+                  <div className="w-12 h-12 rounded bg-ocean-1000 flex items-center justify-center text-ocean-700">
                     <Shield className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="block text-white font-medium">Privacy</span>
-                    <span className="text-xs text-ocean-500">Stealth mode active</span>
+                    <span className="block text-ocean-600 font-black uppercase tracking-widest text-sm mb-1">Cloak Active</span>
+                    <span className="text-[10px] text-ocean-700 font-bold uppercase tracking-widest">Stealth Configuration</span>
                   </div>
                 </div>
               </div>
@@ -116,16 +126,17 @@ export default function SettingsPage() {
           </section>
 
           {/* Support Section */}
-          <section className="glass-card rounded-[2rem] p-6 border border-ocean-800/50">
-            <h2 className="text-xs font-bold text-ocean-400 uppercase tracking-widest mb-6 px-2">Support</h2>
-            <div className="space-y-2">
-              <Link href="mailto:support@abyss-app.com" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-ocean-900/40 transition-colors group">
-                <div className="w-10 h-10 rounded-full bg-ocean-800 flex items-center justify-center text-ocean-300 group-hover:text-brand-teal transition-colors">
+          <section className="glass-card rounded-2xl p-8 border border-white/5 relative overflow-hidden">
+             <div className="absolute top-0 left-0 w-1 h-full bg-brand-teal/20" />
+            <h2 className="text-[10px] font-black text-ocean-500 uppercase tracking-[0.4em] mb-8">Base_Support</h2>
+            <div className="space-y-4">
+              <Link href="mailto:support@abyss-app.com" className="flex items-center gap-6 p-6 rounded-xl hover:bg-brand-teal/5 transition-all group border border-white/5">
+                <div className="w-12 h-12 rounded bg-ocean-1000 flex items-center justify-center text-ocean-300 group-hover:text-brand-teal transition-all border border-ocean-800">
                   <Smartphone className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="block text-white font-medium">Contact Support</span>
-                  <span className="text-xs text-ocean-500">Get help with your Abyss account</span>
+                  <span className="block text-white font-black uppercase tracking-widest text-sm mb-1">Command Comms</span>
+                  <span className="text-[10px] text-ocean-500 font-bold uppercase tracking-widest">Direct link to mission control</span>
                 </div>
               </Link>
             </div>
@@ -134,14 +145,15 @@ export default function SettingsPage() {
           {/* Logout Section */}
           <button 
             onClick={handleLogout}
-            className="w-full p-6 rounded-[2rem] bg-red-950/20 border border-red-900/30 text-red-400 font-bold flex items-center justify-center gap-3 hover:bg-red-900/20 transition-all hover:border-red-500/50 group"
+            className="w-full p-8 rounded-2xl bg-red-950/10 border border-red-900/20 text-red-500 font-black uppercase tracking-[0.3em] text-xs flex items-center justify-center gap-4 hover:bg-red-900/20 transition-all hover:border-red-500/50 group"
           >
-            <LogOut className="w-5 h-5 group-hover:translate-x-1 transition-transform" /> Sign Out from Abyss
+            <LogOut className="w-5 h-5 group-hover:translate-x-1 transition-transform" /> Decommission Session
           </button>
 
-          <p className="text-center text-ocean-600 text-[10px] tracking-widest uppercase mt-8">
-            Abyss Scuba v1.1.0 • Built for the Depths
-          </p>
+          <div className="text-center mt-12">
+             <p className="text-ocean-700 text-[8px] font-black uppercase tracking-[0.5em] mb-2">ABYSS_PROTOCOL // VER_1.1.0</p>
+             <p className="text-ocean-800 text-[8px] font-black uppercase tracking-[0.2em]">SECURE COMMUNICATION LINE • ENCRYPTED_DEPLOYMENT</p>
+          </div>
         </div>
       </div>
     </main>

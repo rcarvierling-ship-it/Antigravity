@@ -56,61 +56,64 @@ export default function MarineLifeTracker() {
   };
 
   return (
-    <main className="w-full min-h-screen bg-deep-sea pt-24 pb-32 px-4 md:px-8">
-      <div className="max-w-6xl mx-auto">
+    <main className="w-full min-h-screen bg-deep-sea pt-24 pb-32 px-4 md:px-8 relative overflow-hidden">
+      {/* HUD Background Grid */}
+      <div className="absolute inset-0 hud-grid opacity-10 pointer-events-none z-0" />
+      
+      <div className="max-w-7xl mx-auto relative z-10 scan-line">
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 px-2">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <Fish className="w-5 h-5 text-brand-teal" />
-              <span className="text-[10px] font-black text-brand-teal uppercase tracking-[0.4em]">Biometric Database</span>
+              <Activity className="w-4 h-4 text-brand-teal" />
+              <span className="text-[10px] font-black text-brand-teal uppercase tracking-[0.5em]">Biometric Database // Link_0x44</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-black text-white leading-none">Species Discovery</h1>
-            <p className="text-ocean-400 mt-4 max-w-lg font-medium">
-              Cataloging your encounters with the abyss. You have discovered <span className="text-brand-teal font-black">{seenIds.size}</span> out of {species.length} known species.
+            <h1 className="text-4xl md:text-6xl font-black text-white leading-none tracking-tighter uppercase">Species <span className="text-brand-teal">Discovery</span></h1>
+            <p className="text-ocean-500 mt-6 max-w-xl font-black uppercase text-[10px] tracking-widest leading-relaxed">
+              Cataloging encounters within the abyss. Telemetry status: <span className="text-brand-teal">{seenIds.size}</span> species verified / {species.length} known specimens.
             </p>
           </div>
           
-          <div className="flex flex-col lg:flex-row gap-4">
-             <div className="flex bg-ocean-950/50 p-1 rounded-2xl border border-ocean-800">
+          <div className="flex flex-col lg:flex-row gap-6">
+             <div className="flex bg-ocean-1000 p-1.5 rounded-lg border border-ocean-900 shadow-inner">
                 <button 
                   onClick={() => setActiveFilter("all")}
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeFilter === "all" ? "bg-ocean-800 text-white" : "text-ocean-500 hover:text-white"}`}
+                  className={`px-6 py-2.5 rounded text-[10px] font-black uppercase tracking-[0.3em] transition-all ${activeFilter === "all" ? "bg-ocean-800 text-white shadow-[0_0_15px_rgba(255,255,255,0.05)]" : "text-ocean-700 hover:text-white"}`}
                 >
-                  All
+                  All_Data
                 </button>
                 <button 
                   onClick={() => setActiveFilter("seen")}
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeFilter === "seen" ? "bg-brand-teal text-deep-sea" : "text-ocean-500 hover:text-white"}`}
+                  className={`px-6 py-2.5 rounded text-[10px] font-black uppercase tracking-[0.3em] transition-all ${activeFilter === "seen" ? "bg-brand-teal/20 text-brand-teal border border-brand-teal/30 shadow-[0_0_15px_rgba(45,212,191,0.1)]" : "text-ocean-700 hover:text-white"}`}
                 >
-                  Seen
+                  Verified
                 </button>
              </div>
 
-             <div className="flex gap-3">
-                <div className="relative group flex-1 min-w-[200px]">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ocean-500 group-focus-within:text-brand-cyan transition-colors" />
+             <div className="flex gap-4">
+                <div className="relative group flex-1 min-w-[240px]">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ocean-700 group-focus-within:text-brand-cyan transition-colors" />
                   <input 
                     type="text" 
-                    placeholder="Search catalog..." 
+                    placeholder="QUERY BIOMETRIC DATABASE..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-ocean-950/50 border border-ocean-800 rounded-2xl pl-11 pr-4 py-3 text-sm text-white focus:outline-none focus:border-brand-cyan transition-all w-full"
+                    className="bg-ocean-1000 border border-ocean-900 rounded-lg pl-12 pr-4 py-4 text-[10px] font-black text-white placeholder-ocean-800 focus:outline-none focus:border-brand-cyan/50 transition-all w-full uppercase tracking-widest"
                   />
                 </div>
                 <button 
                   onClick={() => setShowLogModal(true)}
-                  className="p-3.5 bg-brand-teal text-deep-sea rounded-2xl hover:shadow-[0_0_20px_rgba(45,212,191,0.4)] transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap font-black uppercase text-[10px] tracking-widest"
+                  className="px-8 bg-brand-teal text-deep-sea rounded-lg hover:shadow-[0_0_30px_rgba(45,212,191,0.3)] transition-all active:scale-95 flex items-center gap-3 whitespace-nowrap font-black uppercase text-[10px] tracking-[0.2em]"
                 >
-                  <Plus className="w-4 h-4" /> Register Discovery
+                  <Plus className="w-5 h-5" /> NEW_DISCOVERY
                 </button>
              </div>
           </div>
         </div>
 
         {/* Grid Section */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           <AnimatePresence mode="popLayout">
             {filteredSpecies.map((s, index) => {
               const isSeen = seenIds.has(s.id);
@@ -119,73 +122,70 @@ export default function MarineLifeTracker() {
               return (
                 <motion.div
                   layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ delay: index * 0.05 }}
+                  transition={{ delay: index * 0.03 }}
                   key={s.id}
                   onClick={() => setSelectedSpecimen(s)}
-                  className={`group relative aspect-[3/4] rounded-3xl overflow-hidden border transition-all duration-500 cursor-pointer ${isSeen ? "border-brand-teal/30 shadow-[0_0_30px_rgba(45,212,191,0.05)]" : "border-ocean-800 grayscale sepia hover:grayscale-0 hover:sepia-0 hover:border-ocean-600"}`}
+                  className={`group relative aspect-[4/5] rounded-none overflow-hidden border transition-all duration-700 cursor-pointer ${isSeen ? "border-brand-teal/20 bg-ocean-1000 shadow-[0_0_40px_rgba(45,212,191,0.03)]" : "border-white/5 grayscale saturate-50 brightness-50 hover:grayscale-0 hover:saturate-100 hover:brightness-100 hover:border-ocean-700"}`}
                 >
                   {/* Background Image / Placeholder */}
-                  <div className="absolute inset-0 bg-ocean-950">
+                  <div className="absolute inset-0 bg-ocean-1000">
                     {s.image_url ? (
                       <img 
                         src={s.image_url} 
                         alt={s.name} 
-                        className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${!isSeen ? "opacity-30 blur-sm" : "opacity-70"}`} 
+                        className={`w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 ${!isSeen ? "opacity-20 blur-sm" : "opacity-60"}`} 
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center opacity-10">
-                        <Fish className="w-16 h-16" />
+                      <div className="w-full h-full flex items-center justify-center opacity-5">
+                        <Fish className="w-20 h-20" />
                       </div>
                     )}
                   </div>
 
-                  {/* Gradient Overlay */}
-                  <div className={`absolute inset-0 bg-gradient-to-t transition-opacity duration-500 ${isSeen ? "from-deep-sea via-deep-sea/40 to-transparent" : "from-ocean-950/90 via-ocean-950/40 to-transparent opacity-80"}`} />
+                  {/* HUD Overlays */}
+                  <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-deep-sea via-deep-sea/80 to-transparent pointer-events-none" />
+                  
+                  {/* Scanning Line Effect */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-brand-cyan/20 blur-[2px] animate-scan pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
 
                   {/* Content */}
-                  <div className="absolute inset-0 p-6 flex flex-col justify-end">
-                    <div className="space-y-1">
-                      <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isSeen ? "text-brand-teal" : "text-ocean-500"}`}>
-                        {s.category}
-                      </span>
-                      <h3 className={`text-lg font-bold leading-tight tracking-tight ${isSeen ? "text-white" : "text-ocean-600 font-mono"}`}>
-                        {isSeen ? s.name : "Unidentified"}
+                  <div className="absolute inset-0 p-5 flex flex-col justify-end">
+                    <div className="space-y-1 relative z-10">
+                      <div className="flex items-center gap-2 mb-2">
+                         <div className={`w-1 h-1 rounded-full ${isSeen ? "bg-brand-teal" : "bg-ocean-800"}`} />
+                         <span className={`text-[8px] font-black uppercase tracking-[0.4em] ${isSeen ? "text-brand-teal" : "text-ocean-600"}`}>
+                           {isSeen ? s.category : "Classified_Specimen"}
+                         </span>
+                      </div>
+                      <h3 className={`text-xl font-black leading-none tracking-tighter uppercase mb-0.5 ${isSeen ? "text-white text-glow-cyan" : "text-ocean-800"}`}>
+                        {isSeen ? s.name : "X_IDENTIFIED"}
                       </h3>
                       {isSeen && s.scientific_name && (
-                        <p className="text-[10px] text-ocean-400 italic truncate">{s.scientific_name}</p>
+                        <p className="text-[8px] text-ocean-500 font-black tracking-widest uppercase italic opacity-60 truncate">{s.scientific_name}</p>
                       )}
                     </div>
 
                     {isSeen ? (
-                      <div className="mt-4 pt-4 border-t border-ocean-400/10 flex items-center justify-between">
-                         <div className="flex items-center gap-1.5 text-[10px] font-bold text-ocean-300">
-                            <Calendar className="w-3 h-3 text-brand-teal" />
+                      <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between relative z-10">
+                         <div className="flex items-center gap-2 text-[8px] font-black text-ocean-400 uppercase tracking-widest">
+                            <Calendar className="w-3 h-3 text-brand-teal opacity-50" />
                             {new Date(sighting?.date_seen).toLocaleDateString()}
                          </div>
-                         <div className="p-2 bg-white/5 rounded-full text-ocean-400">
+                         <div className="w-6 h-6 rounded flex items-center justify-center bg-white/5 text-ocean-600 border border-white/5 group-hover:text-brand-teal group-hover:border-brand-teal/30 transition-all">
                             <Info className="w-3 h-3" />
                          </div>
                       </div>
                     ) : (
-                      <div className="mt-4 flex items-center gap-2">
-                        <div className="px-3 py-1 bg-ocean-800/50 rounded-lg text-[9px] font-black text-ocean-400 uppercase tracking-widest border border-ocean-700/50">
-                          Classified
+                      <div className="mt-4 flex items-center gap-2 relative z-10">
+                        <div className="px-2 py-1 bg-ocean-950/80 rounded border border-ocean-800 text-[6px] font-black text-ocean-700 uppercase tracking-[0.5em]">
+                          Restricted_Data
                         </div>
                       </div>
                     )}
                   </div>
-
-                  {/* Locked Overlay */}
-                  {!isSeen && (
-                    <div className="absolute top-4 right-4 group-hover:opacity-0 transition-opacity">
-                      <div className="w-8 h-8 rounded-full bg-ocean-900/80 backdrop-blur-md flex items-center justify-center border border-ocean-800">
-                        <Camera className="w-3 h-3 text-ocean-600" />
-                      </div>
-                    </div>
-                  )}
                 </motion.div>
               );
             })}
@@ -213,10 +213,9 @@ export default function MarineLifeTracker() {
 
         {/* Empty State */}
         {filteredSpecies.length === 0 && !loading && (
-          <div className="py-32 text-center">
-            <Fish className="w-12 h-12 text-ocean-800 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-ocean-600">No matching specimens found</h3>
-            <p className="text-ocean-700 text-sm mt-2 font-medium uppercase tracking-widest">Awaiting further exploration</p>
+          <div className="py-32 text-center opacity-20">
+            <Activity className="w-12 h-12 text-ocean-700 mx-auto mb-6 animate-pulse" />
+            <h3 className="text-[10px] font-black text-ocean-500 uppercase tracking-[0.5em]">Query_Failed: No_Specimens_Matched</h3>
           </div>
         )}
 

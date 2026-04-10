@@ -35,107 +35,97 @@ export default function LogbookPage() {
   }, []);
 
   return (
-    <main className="w-full min-h-screen px-4 md:px-8 py-8 pt-24 md:pt-12">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <main className="w-full min-h-screen px-4 md:px-8 py-8 pt-24 md:pt-12 bg-deep-sea relative overflow-hidden">
+      {/* HUD Background Grid */}
+      <div className="absolute inset-0 hud-grid opacity-10 pointer-events-none z-0" />
+      
+      <div className="max-w-5xl mx-auto relative z-10 scan-line">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-1">My Logbook</h1>
-            <p className="text-ocean-300 text-sm">{stats.totalDives} total dives • {Math.floor(stats.totalTime / 60)}h {stats.totalTime % 60}m bottom time</p>
+            <div className="flex items-center gap-2 mb-2">
+              <Activity className="w-4 h-4 text-brand-cyan" />
+              <span className="text-[10px] font-black text-brand-cyan uppercase tracking-[0.4em]">Fleet Log: Active</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none mb-4">Expedition <span className="text-brand-cyan">History</span></h1>
+            <p className="text-[10px] font-black text-ocean-500 uppercase tracking-[0.3em]">
+              {stats.totalDives} VERIFIED MISSIONS • {Math.floor(stats.totalTime / 60)}H {stats.totalTime % 60}M BOTTOM TIME
+            </p>
           </div>
           
           <Link 
             href="/logbook/new"
-            className="flex items-center justify-center gap-2 bg-gradient-to-r from-brand-cyan to-brand-teal text-deep-sea font-bold px-6 py-3 rounded-full hover:shadow-[0_0_20px_rgba(0,229,255,0.4)] transition-all transform hover:scale-105"
+            className="flex items-center justify-center gap-3 bg-brand-cyan text-deep-sea font-black text-[10px] uppercase tracking-[0.2em] px-8 py-4 rounded shadow-[0_0_20px_rgba(0,229,255,0.2)] hover:scale-105 transition-all group"
           >
-            <Plus className="w-5 h-5" /> Log a Dive
+            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" /> Log New Mission
           </Link>
         </div>
 
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-4 mb-8">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ocean-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ocean-600" />
             <input 
               type="text" 
-              placeholder="Search dives..." 
-              className="w-full bg-ocean-950/50 border border-ocean-800 rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-brand-cyan transition-colors"
+              placeholder="SEARCH MISSIONS BY SITE OR REGION..." 
+              className="w-full bg-ocean-950/50 border border-ocean-800/30 rounded py-3 pl-12 pr-4 text-[10px] font-black text-white placeholder-ocean-700 uppercase tracking-widest focus:outline-none focus:border-brand-cyan/50 transition-all"
             />
           </div>
-          <button className="p-2 glass rounded-xl text-ocean-300 hover:text-white transition-colors">
-            <Filter className="w-5 h-5" />
-          </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-4">
           {loading ? (
-            <div className="text-center py-20 text-ocean-400 font-bold uppercase tracking-widest animate-pulse">Syncing Logbook...</div>
+            <div className="text-center py-24 text-ocean-500 font-black uppercase tracking-[0.4em] animate-pulse">Synchronizing Log Data...</div>
           ) : logs.length === 0 ? (
-            <div className="glass p-12 rounded-[2rem] text-center border border-ocean-800/50">
-               <Fish className="w-12 h-12 text-ocean-700 mx-auto mb-4" />
-               <p className="text-ocean-300 font-medium">Your logbook is currently empty.</p>
-               <p className="text-ocean-500 text-sm mt-2">Time to get wet and log your first dive!</p>
+            <div className="glass-card p-20 rounded-2xl text-center border-white/5">
+                <Fish className="w-12 h-12 text-ocean-800 mx-auto mb-6" />
+                <p className="text-ocean-400 font-black uppercase tracking-widest">Global Logbook Null</p>
+                <p className="text-ocean-600 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Initialize your first mission to begin data capture.</p>
             </div>
           ) : logs.map((log, i) => (
             <motion.div 
               key={log.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="glass p-4 md:p-6 rounded-2xl border border-ocean-800/50 hover:bg-ocean-900/50 transition-colors cursor-pointer group"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="glass-card p-6 rounded-xl border border-white/5 hover:border-brand-cyan/30 transition-all cursor-pointer group relative overflow-hidden"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-ocean-800/80 flex items-center justify-center border border-ocean-700/50 text-xl font-black text-brand-cyan/80 group-hover:text-brand-cyan transition-colors">
-                    #{logs.length - i}
+              <div className="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-brand-cyan/5 to-transparent pointer-events-none" />
+              
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 rounded bg-ocean-1000 flex items-center justify-center border border-ocean-800 text-xl font-black text-brand-cyan group-hover:text-glow-cyan transition-all">
+                    {String(logs.length - i).padStart(3, '0')}
                   </div>
                   <div>
-                    <h2 className="text-lg md:text-xl font-bold text-white mb-1 group-hover:text-brand-cyan transition-colors">{log.dive_sites?.name || log.custom_site_name || "Unknown Site"}</h2>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ocean-300">
-                      <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {log.dive_sites?.country || "Earth"}</span>
-                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(log.date).toLocaleDateString()}</span>
+                    <h2 className="text-xl font-black text-white group-hover:text-brand-cyan transition-colors uppercase tracking-tighter leading-none mb-2">{log.dive_sites?.name || log.custom_site_name || "Unknown Site"}</h2>
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                       <span className="flex items-center gap-2 text-[10px] font-black text-ocean-400 uppercase tracking-widest">
+                         <MapPin className="w-3.5 h-3.5 text-ocean-600" /> {log.dive_sites?.country || "Earth Core"}
+                       </span>
+                       <span className="flex items-center gap-2 text-[10px] font-black text-ocean-400 uppercase tracking-widest">
+                         <Calendar className="w-3.5 h-3.5 text-ocean-600" /> {new Date(log.date).toLocaleDateString()}
+                       </span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="text-right hidden sm:flex flex-col items-end">
-                  <div className="flex">
-                    {Array.from({length: 5}).map((_, j) => (
-                      <Anchor key={j} className={`w-4 h-4 ${j < (log.rating || 0) ? 'text-brand-cyan fill-brand-cyan' : 'text-ocean-800'}`} />
-                    ))}
+                <div className="flex items-center gap-12 md:text-right">
+                  <div className="flex flex-col">
+                    <span className="text-[8px] font-black text-ocean-500 uppercase tracking-widest mb-1">Max Depth</span>
+                    <span className="text-lg font-black text-brand-cyan text-glow-cyan leading-none uppercase">{mToFt(log.max_depth_m)} FT</span>
                   </div>
-                  <span className="text-[10px] bg-ocean-800/60 text-ocean-200 px-2 py-0.5 rounded-full mt-2 font-medium">
-                    {log.gas_mix || "Air"}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="mt-4 pt-4 border-t border-ocean-800/30 flex items-center justify-between md:justify-start md:gap-12">
-                <div className="flex items-center gap-2">
-                  <Anchor className="w-4 h-4 text-brand-cyan" />
-                  <div>
-                    <span className="block text-[10px] text-ocean-400 uppercase tracking-wide">Max Depth</span>
-                    <span className="font-bold text-white">{mToFt(log.max_depth_m)} ft</span>
+                  <div className="flex flex-col">
+                    <span className="text-[8px] font-black text-ocean-500 uppercase tracking-widest mb-1">Duration</span>
+                    <span className="text-lg font-black text-white leading-none uppercase">{log.bottom_time_min} MIN</span>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-brand-cyan" />
-                  <div>
-                    <span className="block text-[10px] text-ocean-400 uppercase tracking-wide">Time</span>
-                    <span className="font-bold text-white">{log.bottom_time_min} min</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Fish className="w-4 h-4 text-brand-cyan" />
-                  <div>
-                    <span className="block text-[10px] text-ocean-400 uppercase tracking-wide">Water Temp</span>
-                    <span className="font-bold text-white">{cToF(log.water_temp_c)} °F</span>
+                  <div className="hidden lg:flex flex-col">
+                    <span className="text-[8px] font-black text-ocean-500 uppercase tracking-widest mb-1">Gas Mix</span>
+                    <span className="text-lg font-black text-brand-teal leading-none uppercase">{log.gas_mix || "AIR"}</span>
                   </div>
                 </div>
               </div>
-
             </motion.div>
           ))}
         </div>
-
       </div>
     </main>
   );
