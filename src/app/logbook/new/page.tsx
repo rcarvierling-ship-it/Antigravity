@@ -1,23 +1,47 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { ArrowLeft, Save, MapPin, Calendar, Clock, Anchor, Wind, Users, Zap } from "lucide-react";
+import { ArrowLeft, Save, MapPin, Calendar, Clock, Anchor, Wind, Users, Zap, Star, Waves, Camera, Plus, Store } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { calculateSACRate, checkBadgeEligibility } from "@/lib/dive-logic";
+import { useState, useEffect } from "react";
 
 export default function NewDiveLog() {
-  const { register, handleSubmit, watch } = useForm();
+  const { register, handleSubmit, watch, setValue } = useForm();
   const router = useRouter();
+  const supabase = createClient();
   
+  const [rating, setRating] = useState(0);
+  const [shops, setShops] = useState<any[]>([]);
+  const [species, setSpecies] = useState<any[]>([]);
+  const [selectedSpecies, setSelectedSpecies] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+
   const startPsi = watch("startPsi");
   const endPsi = watch("endPsi");
   const depth = watch("avgDepth");
   const duration = watch("duration");
 
+  useEffect(() => {
+    async function fetchData() {
+      const { data: shopsData } = await supabase.from("dive_shops").select("*");
+      if (shopsData) setShops(shopsData);
+
+      const { data: speciesData } = await supabase.from("marine_life_species").select("*");
+      if (speciesData) setSpecies(speciesData);
+    }
+    fetchData();
+  }, [supabase]);
+
+  const toggleSpecies = (id: string) => {
+    setSelectedSpecies(prev => 
+      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+    );
+  };
+
   const onSubmit = async (data: any) => {
-    const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) return;
@@ -26,10 +50,11 @@ export default function NewDiveLog() {
       startPsi: Number(data.startPsi),
       endPsi: Number(data.endPsi),
       tankVolumeCuft: Number(data.tankVolume),
-      avgDepthFt: Number(data.avgDepth) * 3.28, // Convert m to ft for calculation
+      avgDepthFt: Number(data.avgDepth) * 3.28,
       durationMin: Number(data.duration)
     });
 
+    // 1. Insert Dive Log
     const { data: logData, error } = await supabase.from("dive_logs").insert({
       user_id: user.id,
       custom_site_name: data.site,
@@ -42,10 +67,27 @@ export default function NewDiveLog() {
       end_psi: Number(data.endPsi),
       tank_volume_cuft: Number(data.tankVolume),
       avg_depth_m: Number(data.avgDepth),
+      rating: rating,
+      current_strength: data.currentStrength,
+      dive_shop_id: data.diveShop !== "none" ? data.diveShop : null,
+      notes: data.notes,
+      visibility_m: Number(data.visibility),
       air_analytics_json: { sac }
     }).select().single();
 
     if (!error && logData) {
+      // 2. Insert Marine Life Sightings
+      if (selectedSpecies.length > 0) {
+        const sightings = selectedSpecies.map(sId => ({
+          user_id: user.id,
+          species_id: sId,
+          dive_log_id: logData.id,
+          date_seen: data.date
+        }));
+        await supabase.from("user_marine_life_sightings").insert(sightings);
+      }
+
+      // 3. Check Badges
       const eligibleBadges = checkBadgeEligibility({
         max_depth_m: Number(data.maxDepth),
         water_temp_c: Number(data.temp),
@@ -58,7 +100,7 @@ export default function NewDiveLog() {
           await supabase.from("user_badges").insert({
             user_id: user.id,
             badge_id: b.id
-          }); // Swallowed error is intentional for unique constraint
+          });
         }
       }
       
@@ -73,35 +115,59 @@ export default function NewDiveLog() {
           <ArrowLeft className="w-4 h-4" /> Back to Logbook
         </Link>
         
-        <h1 className="text-3xl font-bold text-white mb-8">Log New Dive</h1>
+        <div className="flex justify-between items-end mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-white leading-tight">Log New Mission</h1>
+            <p className="text-ocean-400 text-sm">Capture your telemetry and sightings.</p>
+          </div>
+          <div className="flex items-center gap-1 group cursor-pointer" onClick={() => {}}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star 
+                key={star} 
+                onClick={() => setRating(star)}
+                className={`w-6 h-6 transition-all ${rating >= star ? "fill-brand-cyan text-brand-cyan drop-shadow-[0_0_8px_rgba(0,229,255,0.4)]" : "text-ocean-800 hover:text-ocean-600"}`} 
+              />
+            ))}
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           
           {/* Section 1: Core Details */}
           <section className="glass-card p-6 md:p-8 rounded-3xl">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-brand-cyan" /> Core Details
+              <MapPin className="w-5 h-5 text-brand-cyan" /> Mission Parameters
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-ocean-200 mb-2">Dive Site</label>
-                <input 
-                  {...register("site")}
-                  className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
-                  placeholder="e.g. Barracuda Point"
-                />
+              <div className="col-span-full grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-ocean-200 mb-2">Dive Site</label>
+                  <input 
+                    {...register("site")}
+                    className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
+                    placeholder="e.g. Barracuda Point"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-ocean-200 mb-2 flex items-center gap-2">
+                    <Store className="w-4 h-4 text-ocean-400" /> Dive Shop / Center
+                  </label>
+                  <select 
+                    {...register("diveShop")}
+                    className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors appearance-none"
+                  >
+                    <option value="none">No Shop / Private</option>
+                    {shops.map(shop => (
+                      <option key={shop.id} value={shop.id}>{shop.name}</option>
+                    ))}
+                    <option value="add">+ Add New Shop</option>
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-ocean-200 mb-2">Location / Country</label>
-                <input 
-                  {...register("location")}
-                  className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
-                  placeholder="e.g. Malaysia"
-                />
-              </div>
+              
               <div>
                 <label className="block text-sm font-medium text-ocean-200 mb-2 flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-ocean-400" /> Date
+                  <Calendar className="w-4 h-4 text-ocean-400" /> Mission Date
                 </label>
                 <input 
                   type="date"
@@ -112,13 +178,12 @@ export default function NewDiveLog() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-ocean-200 mb-2 flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-ocean-400" /> Duration (min)
+                    <Clock className="w-4 h-4 text-ocean-400" /> Bottom Time (min)
                   </label>
                   <input 
                     type="number"
                     {...register("duration")}
                     className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
-                    placeholder="45"
                   />
                 </div>
                 <div>
@@ -135,46 +200,18 @@ export default function NewDiveLog() {
             </div>
           </section>
 
-          {/* Section 2: Profile */}
+          {/* Section 2: Gas & Depth */}
           <section className="glass-card p-6 md:p-8 rounded-3xl">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-              <Anchor className="w-5 h-5 text-brand-cyan" /> Profile & Gas
+              <Anchor className="w-5 h-5 text-brand-cyan" /> Technical Profile
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-ocean-200 mb-2">Tank Size (cuft)</label>
-                <input 
-                  type="number"
-                  {...register("tankVolume")}
-                  defaultValue="80"
-                  className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-ocean-200 mb-2">Start PSI</label>
-                <input 
-                  type="number"
-                  {...register("startPsi")}
-                  className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
-                  placeholder="3000"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-ocean-200 mb-2">End PSI</label>
-                <input 
-                  type="number"
-                  {...register("endPsi")}
-                  className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
-                  placeholder="500"
-                />
-              </div>
               <div>
                 <label className="block text-sm font-medium text-ocean-200 mb-2">Max Depth (m)</label>
                 <input 
                   type="number"
                   {...register("maxDepth")}
                   className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
-                  placeholder="0"
                 />
               </div>
               <div>
@@ -183,7 +220,6 @@ export default function NewDiveLog() {
                   type="number"
                   {...register("avgDepth")}
                   className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
-                  placeholder="0"
                 />
               </div>
               <div>
@@ -197,31 +233,85 @@ export default function NewDiveLog() {
                   <option value="Nitrox 36">Nitrox 36%</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-ocean-200 mb-2">Tank (cuft)</label>
+                <input 
+                  type="number"
+                  {...register("tankVolume")}
+                  defaultValue="80"
+                  className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ocean-200 mb-2">Start PSI</label>
+                <input 
+                  type="number"
+                  {...register("startPsi")}
+                  className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ocean-200 mb-2">End PSI</label>
+                <input 
+                  type="number"
+                  {...register("endPsi")}
+                  className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
+                />
+              </div>
             </div>
             
             {(startPsi && endPsi && depth && duration) && (
               <div className="mt-6 p-4 bg-brand-cyan/10 border border-brand-cyan/30 rounded-2xl flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Zap className="w-5 h-5 text-brand-cyan" />
-                  <span className="text-white font-bold">Estimated SAC Rate</span>
+                  <span className="text-white font-bold text-sm">Real-time Efficiency Analyser</span>
                 </div>
-                <span className="text-brand-cyan font-black text-xl">
-                  {calculateSACRate({
-                    startPsi: Number(startPsi),
-                    endPsi: Number(endPsi),
-                    tankVolumeCuft: 80,
-                    avgDepthFt: Number(depth) * 3.28,
-                    durationMin: Number(duration)
-                  })} <span className="text-xs font-normal">cuft/min</span>
-                </span>
+                <div className="text-right">
+                  <div className="text-brand-cyan font-black text-2xl leading-none">
+                    {calculateSACRate({
+                      startPsi: Number(startPsi),
+                      endPsi: Number(endPsi),
+                      tankVolumeCuft: Number(watch("tankVolume") || 80),
+                      avgDepthFt: Number(depth) * 3.28,
+                      durationMin: Number(duration)
+                    })}
+                  </div>
+                  <span className="text-[10px] text-ocean-400 font-bold uppercase tracking-widest">SAC Rate (cuft/min)</span>
+                </div>
               </div>
             )}
           </section>
 
-          {/* Section 3: Conditions */}
+          {/* Section 3: Marine Life Tracker (NEW) */}
           <section className="glass-card p-6 md:p-8 rounded-3xl">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-              <Wind className="w-5 h-5 text-brand-cyan" /> Conditions
+              <Plus className="w-5 h-5 text-brand-teal" /> Marine Life Tracker
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {species.map(item => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => toggleSpecies(item.id)}
+                  className={`p-3 rounded-2xl border transition-all text-left group ${selectedSpecies.includes(item.id) 
+                    ? "bg-brand-teal/20 border-brand-teal text-white shadow-[0_0_15px_rgba(45,212,191,0.2)]" 
+                    : "bg-ocean-950 border-ocean-800 text-ocean-400 hover:border-ocean-600 hover:text-white"}`}
+                >
+                  <p className="text-xs font-bold truncate">{item.name}</p>
+                  <p className="text-[10px] text-ocean-500 group-hover:text-ocean-300 transition-colors uppercase tracking-widest">{item.category}</p>
+                </button>
+              ))}
+              <button type="button" className="p-3 rounded-2xl border border-dashed border-ocean-700 text-ocean-500 hover:border-ocean-400 hover:text-white transition-all flex flex-col items-center justify-center gap-1">
+                <Plus className="w-4 h-4" />
+                <span className="text-[10px] uppercase font-black">Unknown</span>
+              </button>
+            </div>
+          </section>
+
+          {/* Section 4: Conditions */}
+          <section className="glass-card p-6 md:p-8 rounded-3xl">
+            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+              <Waves className="w-5 h-5 text-brand-cyan" /> Ocean State
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div>
@@ -230,7 +320,6 @@ export default function NewDiveLog() {
                   type="number"
                   {...register("temp")}
                   className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
-                  placeholder="28"
                 />
               </div>
               <div>
@@ -239,15 +328,38 @@ export default function NewDiveLog() {
                   type="number"
                   {...register("visibility")}
                   className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
-                  placeholder="20"
                 />
               </div>
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-ocean-200 mb-2">Notes</label>
+                <label className="block text-sm font-medium text-ocean-200 mb-2">Current Strength</label>
+                <select 
+                  {...register("currentStrength")}
+                  className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors"
+                >
+                  <option value="none">None / Slack</option>
+                  <option value="mild">Mild</option>
+                  <option value="strong">Strong</option>
+                  <option value="ripping">Ripping</option>
+                </select>
+              </div>
+              
+              <div className="col-span-full">
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-ocean-200 mb-2 flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-ocean-400" /> Dive Media (Photos/Video)
+                  </label>
+                  <div className="w-full border-2 border-dashed border-ocean-800 rounded-2xl p-8 flex flex-col items-center justify-center text-center hover:bg-ocean-900/40 hover:border-ocean-600 transition-all cursor-pointer">
+                    <Camera className="w-8 h-8 text-ocean-600 mb-2" />
+                    <p className="text-sm text-ocean-500 font-medium">Drag and drop mission imagery or <span className="text-brand-cyan">browse files</span></p>
+                    <p className="text-[10px] text-ocean-600 uppercase tracking-widest mt-1">PNG, JPG, MOV, MP4 (MAX 50MB)</p>
+                  </div>
+                </div>
+
+                <label className="block text-sm font-medium text-ocean-200 mb-2">Mission Log / Notes</label>
                 <textarea 
                   {...register("notes")}
-                  className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors h-24 resize-none"
-                  placeholder="Amazing dive, saw three turtles and a reef shark..."
+                  className="w-full bg-ocean-950 border border-ocean-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors h-32 resize-none"
+                  placeholder="Describe your underwater discoveries, gear performance, and unique sightings..."
                 />
               </div>
             </div>
@@ -255,9 +367,9 @@ export default function NewDiveLog() {
 
           <button 
             type="submit"
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-cyan to-brand-teal text-deep-sea font-bold text-lg flex items-center justify-center gap-2 hover:shadow-[0_0_25px_rgba(0,229,255,0.4)] transition-all"
+            className="w-full py-5 rounded-2xl bg-gradient-to-r from-brand-cyan to-brand-teal text-deep-sea font-black text-xl flex items-center justify-center gap-3 hover:shadow-[0_0_35px_rgba(0,229,255,0.4)] transition-all uppercase tracking-widest group"
           >
-            <Save className="w-5 h-5" /> Save Dive Log
+            <Save className="w-6 h-6 group-hover:scale-110 transition-transform" /> Commit to Logbook
           </button>
         </form>
       </div>

@@ -25,6 +25,7 @@ const customIcon = L.divIcon({
 
 import { useState } from "react";
 import { SiteDetailModal } from "@/components/explore/SiteDetailModal";
+import { ConditionsPreview } from "@/components/shared/ConditionsDisplay";
 
 function MapUpdater({ center, markers }: { center: [number, number], markers: any[] }) {
   const map = useMap();
@@ -73,7 +74,17 @@ export default function MapComponent({ centers, markers, onSiteSelect }: any) {
             eventHandlers={{
               click: () => onSiteSelect && onSiteSelect(marker),
             }}
-          />
+          >
+            <Popup className="premium-popup">
+              <div className="p-1 min-w-[200px]">
+                <h4 className="text-sm font-black text-white mb-2 tracking-tight">{marker.name}</h4>
+                <div className="bg-ocean-950/50 rounded-xl p-2 border border-ocean-800/50">
+                   <ConditionsPreview lat={marker.position.lat} lng={marker.position.lng} country={marker.country} />
+                </div>
+                <p className="text-[9px] text-ocean-500 font-bold uppercase tracking-widest mt-2">{marker.region || marker.country}</p>
+              </div>
+            </Popup>
+          </Marker>
         ))}
       </MapContainer>
       

@@ -6,6 +6,7 @@ import { X, MapPin, Waves, Wind, Thermometer, ArrowRight, Gauge, Cloud, ChevronD
 import Link from "next/link";
 import { cToF, mToFt, msToMph, cloudCoverToCondition } from "@/lib/conversions";
 import { createClient } from "@/lib/supabase/client";
+import { ConditionsMetric, ConditionsFooter } from "@/components/shared/ConditionsDisplay";
 
 interface SiteDetailModalProps {
   site: any | null;
@@ -26,14 +27,14 @@ export function SiteDetailModal({ site, onClose }: SiteDetailModalProps) {
     setDiveHistory(null);
     setWeatherData(null);
     
-    // Fetch live weather data
-    fetch(`/api/weather?lat=${site.position.lat}&lng=${site.position.lng}`)
+    // Fetch live weather data with country-aware overrides
+    fetch(`/api/weather?lat=${site.position.lat}&lng=${site.position.lng}&country=${encodeURIComponent(site.country || '')}`)
       .then(res => {
         if (!res.ok) throw new Error("Failed to fetch");
         return res.json();
       })
       .then(data => {
-        setWeatherData(data.data);
+        setWeatherData(data);
         setLoading(false);
       })
       .catch(err => {
@@ -89,6 +90,15 @@ export function SiteDetailModal({ site, onClose }: SiteDetailModalProps) {
 
             {/* Header Image Area */}
             <div className="relative h-44 md:h-52 bg-gradient-to-br from-ocean-800 to-ocean-950 overflow-hidden shrink-0">
+              <div className="absolute inset-0 z-0">
+                {(site.img || site.image_url) && (
+                  <img 
+                    src={site.img || site.image_url} 
+                    alt={site.name} 
+                    className="w-full h-full object-cover opacity-60" 
+                  />
+                )}
+              </div>
               <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-ocean-950 to-transparent z-10" />
               
               <button 
@@ -108,9 +118,9 @@ export function SiteDetailModal({ site, onClose }: SiteDetailModalProps) {
                     {site.depth}m / {Math.round(site.depth * 3.28)}ft
                   </span>
                 </div>
-                <h2 className="text-2xl md:text-3xl font-black text-white leading-tight drop-shadow-md">{site.name}</h2>
+                <h2 className="text-2xl md:text-3xl font-black text-white leading-tight drop-shadow-md tracking-tight">{site.name}</h2>
                 <p className="flex items-center gap-1 text-ocean-300 text-sm font-medium mt-1">
-                  <MapPin className="w-3.5 h-3.5 text-ocean-500" /> {site.region}, {site.country}
+                  <MapPin className="w-3.5 h-3.5 text-ocean-500" /> {site.region || site.country}, {site.country}
                 </p>
               </div>
             </div>
@@ -144,27 +154,21 @@ export function SiteDetailModal({ site, onClose }: SiteDetailModalProps) {
                   <Cloud className="w-5 h-5 text-red-400" /> Telemetry link offline. Check connection.
                 </div>
               ) : weatherData ? (
-                <div className="grid grid-cols-2 gap-3 mb-8">
-                  {/* Stats Grids */}
-                  {[
-                    { label: "Air Temp", val: `${cToF(weatherData.airTemperature)}°F`, icon: <Thermometer className="w-4 h-4" />, color: "text-yellow-500", bg: "bg-yellow-500/10" },
-                    { label: "Sea Temp", val: `${cToF(weatherData.waterTemperature)}°F`, icon: <Waves className="w-4 h-4" />, color: "text-orange-500", bg: "bg-orange-500/10" },
-                    { label: "Sky", val: cloudCoverToCondition(weatherData.cloudCover), icon: <Cloud className="w-4 h-4" />, color: "text-blue-400", bg: "bg-blue-500/10" },
-                    { label: "Waves", val: `${mToFt(weatherData.waveHeight).slice(0, 3)} ft`, icon: <Gauge className="w-4 h-4" />, color: "text-brand-cyan", bg: "bg-brand-cyan/10" },
-                    { label: "Wind", val: `${msToMph(weatherData.windSpeed)} mph`, icon: <Wind className="w-4 h-4" />, color: "text-purple-400", bg: "bg-purple-500/10" },
-                    { label: "Current", val: `${msToMph(weatherData.currentSpeed)} mph`, icon: <Waves className="w-4 h-4" />, color: "text-brand-teal", bg: "bg-brand-teal/10" },
-                  ].map((stat, i) => (
-                    <div key={i} className="bg-ocean-900/40 border border-ocean-800/50 rounded-2xl p-4 flex gap-3 items-center hover:border-white/10 transition-colors">
-                      <div className={`w-8 h-8 rounded-xl ${stat.bg} flex items-center justify-center ${stat.color} shrink-0`}>
-                        {stat.icon}
-                      </div>
-                      <div className="overflow-hidden">
-                        <p className="text-[9px] text-ocean-400 uppercase tracking-widest font-black truncate">{stat.label}</p>
-                        <p className="text-base font-black text-white truncate">{stat.val}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <ConditionsMetric label="Wave Height" metric={weatherData.marine.waveHeight} icon={<Waves className="w-4 h-4" />} />
+                    <ConditionsMetric label="Sea Temp" metric={weatherData.marine.seaSurfaceTemp} icon={<Thermometer className="w-4 h-4" />} />
+                    <ConditionsMetric label="Wind Speed" metric={weatherData.weather.windSpeed} icon={<Wind className="w-4 h-4" />} />
+                    <ConditionsMetric label="Current" metric={weatherData.marine.currentSpeed} icon={<Waves className="w-4 h-4" />} />
+                    <ConditionsMetric label="Air Temp" metric={weatherData.weather.airTemp} icon={<Thermometer className="w-4 h-4" />} />
+                    <ConditionsMetric label="Cloud Cover" metric={weatherData.weather.cloudCover} icon={<Cloud className="w-4 h-4" />} />
+                    {weatherData.marine.tide.value !== "Unavailable" && (
+                      <ConditionsMetric label="Tide Level" metric={weatherData.marine.tide} icon={<Gauge className="w-4 h-4" />} />
+                    )}
+                    <ConditionsMetric label="Precip" metric={weatherData.weather.precipitationChance} icon={<Cloud className="w-4 h-4" />} />
+                  </div>
+                  <ConditionsFooter meta={weatherData.meta} />
+                </>
               ) : null}
 
               <Link 

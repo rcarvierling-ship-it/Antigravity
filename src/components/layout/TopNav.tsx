@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compass, BookOpen, Users, Bell, User } from "lucide-react";
+import { Compass, BookOpen, Users, Bell, User, Waves } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 
@@ -20,7 +20,7 @@ export function TopNav() {
       if (user) {
         const { data } = await supabase
           .from("profiles")
-          .select("display_name, certification_level, avatar_url")
+          .select("display_name, certification_level, avatar_url, role")
           .eq("id", user.id)
           .single();
         
@@ -37,6 +37,7 @@ export function TopNav() {
   const links = [
     { href: "/explore", label: "Explore", icon: Compass },
     { href: "/logbook", label: "Logs", icon: BookOpen },
+    { href: "/marine-life", label: "Marine Life", icon: Waves },
     { href: "/social", label: "Social", icon: Users },
   ];
 
@@ -82,16 +83,21 @@ export function TopNav() {
             <Bell className="w-5 h-5" />
           </button>
           
-          <Link href={profile ? "/profile" : "/auth/login"} className="flex items-center gap-3 glass py-1.5 px-3 rounded-full hover:border-brand-cyan/30 transition-colors cursor-pointer">
+          <Link href={profile ? "/profile" : "/auth/login"} className="flex items-center gap-3 glass py-1.5 px-3 rounded-full hover:border-brand-cyan/30 transition-colors cursor-pointer group">
             <div className="flex flex-col text-right">
-              <span className="text-xs font-bold text-white">
-                {loading ? "..." : profile?.display_name || "Guest Diver"}
-              </span>
-              <span className="text-[10px] text-brand-cyan uppercase">
+              <div className="flex items-center gap-1.5 justify-end">
+                {profile?.role === 'admin' && (
+                  <span className="text-[8px] font-black text-white bg-brand-cyan py-0.5 px-1.5 rounded-sm tracking-widest uppercase">Admin</span>
+                )}
+                <span className="text-xs font-bold text-white group-hover:text-brand-cyan transition-colors">
+                  {loading ? "..." : profile?.display_name || "Guest Diver"}
+                </span>
+              </div>
+              <span className="text-[10px] text-brand-cyan uppercase font-bold tracking-tight">
                 {loading ? "..." : profile?.certification_level || "No Rank"}
               </span>
             </div>
-            <div className="w-8 h-8 rounded-full bg-ocean-800 flex items-center justify-center border border-ocean-600 overflow-hidden">
+            <div className="w-8 h-8 rounded-full bg-ocean-800 flex items-center justify-center border border-ocean-600 overflow-hidden group-hover:border-brand-cyan/50 transition-colors">
               {profile?.avatar_url ? (
                 <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
               ) : (
