@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Fish, MapPin, Calendar, Info, Search, Filter, Camera, Plus } from "lucide-react";
+import { Fish, MapPin, Calendar, Info, Search, Filter, Camera, Plus, Activity } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SpeciesDossier } from "@/components/marine-life/SpeciesDossier";
 import { EncounterLogModal } from "@/components/marine-life/EncounterLogModal";
