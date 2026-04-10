@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="popup.css">
+  <title>Abyss Companion</title>
+</head>
+<body>
+  <div className="container">
+    <header>
+      <div className="logo-group">
+        <div className="logo-dot"></div>
+        <h1>ABYSS <span>HUD</span></h1>
+      </div>
+      <div className="status">SATELLITE LINK ACTIVE</div>
+    </header>
+
+    <main>
+      <div className="input-group">
+        <label for="notes">MISSION NOTES</label>
+        <textarea id="notes" placeholder="Log coordinates, conditions, or gear notes..."></textarea>
+      </div>
+      
+      <div className="stats-grid">
+        <div className="stat">
+          <span className="label">DEPTH LIMIT</span>
+          <span className="value">40M</span>
+        </div>
+        <div className="stat">
+          <span className="label">N2 LOAD</span>
+          <span className="value safe">SAFE</span>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <button id="open-app">LAUNCH FULL MISSION HUB</button>
+      <div className="footer-links">
+        <span>v1.0</span>
+        <span className="pulse"></span>
+      </div>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
