@@ -6,8 +6,12 @@ import { User, Award, Activity, Settings, Edit3, Zap } from "lucide-react";
 import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, AreaChart, Area, LineChart, Line } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
 export default function ProfilePage() {
+  const [profile, setProfile] = useState<any>(null);
+  const [badges, setBadges] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("stats");
   const [chartData, setChartData] = useState<any>({ sac: [], bottomTime: [] });
 
