@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MessageSquare, Heart, Share2, MapPin, Calendar, Users, Camera, UserPlus, Filter } from "lucide-react";
+import { MessageSquare, Heart, Share2, MapPin, Calendar, Users, Camera, UserPlus, Filter, Bell } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 
