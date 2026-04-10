@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { calculateSAC } from "@/lib/services/analytics";
+import { checkBadgeEligibility } from "@/lib/dive-logic";
 import { useState, useEffect } from "react";
 
 export default function NewDiveLog() {
